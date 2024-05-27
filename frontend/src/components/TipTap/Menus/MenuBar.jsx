@@ -18,12 +18,7 @@ import {
   LuImage,
 } from 'react-icons/lu';
 import { BiParagraph } from 'react-icons/bi';
-import {
-  RiCodeBlock,
-  RiSeparator,
-  RiTextWrap,
-  RiFontSize,
-} from 'react-icons/ri';
+import { RiCodeBlock, RiSeparator, RiTextWrap } from 'react-icons/ri';
 
 import Button from '../../Editor/Button';
 import HeadingsDropDown from '../DropDowns/HeadingsDropDown';

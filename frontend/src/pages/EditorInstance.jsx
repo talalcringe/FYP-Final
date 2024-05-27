@@ -136,9 +136,9 @@ const EditorInstance = ({ title, fonts }) => {
   };
 
   return (
-    <div className='flex h-full'>
+    <div className=' relative flex justify-between w-screen h-full'>
       {/* Sidebar for selecting pages */}
-      <div className='flex items-end h-full w-[15vw]'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <LeftSidebar
           pages={pages}
           selectedPageId={selectedPageId}
@@ -146,13 +146,12 @@ const EditorInstance = ({ title, fonts }) => {
           newPage={newPage}
         />
       </div>
-
       {/* Main area for displaying the selected page */}
-      <div className='p-4 w-[75vw] h-full'>
+      <div className='p-4 w-[40vw] h-full'>
         {selectedPageId && content && (
           <TipTap
             key={selectedPageId}
-            id={selectedPageId}
+            pageId={selectedPageId}
             deletePage={deletePage}
             content={content}
             fonts={fonts}
@@ -160,9 +159,8 @@ const EditorInstance = ({ title, fonts }) => {
           />
         )}
       </div>
-
       {/* Sidebar for selecting modals */}
-      <div className='flex align-self-end justify-self-end h-full w-[15vw]'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <RightSidebar />
       </div>
     </div>

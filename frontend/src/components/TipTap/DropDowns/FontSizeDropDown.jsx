@@ -50,7 +50,7 @@ const FontSizeDropDown = ({ editor }) => {
   const toggleOff = () => {
     interval.current = setInterval(() => {
       setShowOptions(false);
-    }, 1000);
+    }, 600);
   };
 
   const toggleOn = () => {

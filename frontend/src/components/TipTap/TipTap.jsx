@@ -43,36 +43,37 @@ const extensions = [
 
 const chapter = '1';
 
-const TipTap = ({ id, title, content, deletePage, fonts }) => {
-  // console.log('TipTap rendered with id', id, 'content: ', content);
+const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
+  // console.log('TipTap rendered with pageId', pageId, 'content: ', content);
   const [wordCount, setWordCount] = useState(0);
 
   const editor = useEditor({
     extensions: extensions,
     content: content,
     onUpdate: ({ editor }) => {
-      localStorageService.setItem(id, editor.getHTML());
+      localStorageService.setItem(pageId, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
       console.log('wordCount: ', wordCount);
       console.log('content', content);
     },
 
     onBlur: async ({ editor }) => {
-      const content = localStorageService.getItem(id);
+      const content = localStorageService.getItem(pageId);
       if (editor && editor.isEditable && content) {
-        await indexedDBService.updateItem(id, {
+        await indexedDBService.updateItem(pageId, {
           content: content,
           words: wordCount,
         });
+        localStorageService.deleteItem(pageId);
       } else {
-        // console.log('Editor was infact not editable at this point');
+        console.log('Editor was infact not editable at this point');
       }
     },
 
     onDestroy: async () => {
-      const content = localStorageService.getItem(id);
+      const content = localStorageService.getItem(pageId);
       if (content) {
-        await indexedDBService.updateItem(id, {
+        await indexedDBService.updateItem(pageId, {
           content: content,
           words: wordCount,
         });
@@ -87,7 +88,7 @@ const TipTap = ({ id, title, content, deletePage, fonts }) => {
     if (editor && content && content !== '<p></p>') {
       editor.commands.setContent(content);
     }
-  }, [id, editor]);
+  }, [pageId, editor]);
 
   const styles = {
     top: {
@@ -125,31 +126,33 @@ const TipTap = ({ id, title, content, deletePage, fonts }) => {
   };
 
   return (
-    <div className='m-0 px-10 h-[50vh] flex-col justify-center items-center'>
-      <TitleBar title={title} wordCount={wordCount} deletePage={deletePage} />
-      <MenuBar
-        editor={editor}
-        style={styles.top.style}
-        blockLabels={styles.top.blockLabels}
-        showDividers={true}
-        fonts={fonts}
-        showBasicStyles={true}
-        showCode={true}
-        showAlignment={true}
-        showParagraph={true}
-        showHeadings={true}
-        showUl={true}
-        showOl={true}
-        showCodeBlock={true}
-        showQuote={true}
-        showHR={true}
-        showTextWrap={true}
-        showLink={true}
-        showExtraOptions={true}
-        showRemoveFormating={true}
-        showUndoRedo={true}
-        showImage={false}
-      />
+    <div className='flex flex-col justify-center items-center'>
+      <div className='sticky top-5 z-10'>
+        <TitleBar title={title} wordCount={wordCount} deletePage={deletePage} />
+        <MenuBar
+          editor={editor}
+          style={styles.top.style}
+          blockLabels={styles.top.blockLabels}
+          showDividers={true}
+          fonts={fonts}
+          showBasicStyles={true}
+          showCode={true}
+          showAlignment={true}
+          showParagraph={true}
+          showHeadings={true}
+          showUl={true}
+          showOl={true}
+          showCodeBlock={true}
+          showQuote={true}
+          showHR={true}
+          showTextWrap={true}
+          showLink={true}
+          showExtraOptions={true}
+          showRemoveFormating={true}
+          showUndoRedo={true}
+          showImage={false}
+        />
+      </div>
       <EditorContent editor={editor} />
       <FloatingMenu
         editor={editor}
