@@ -1,0 +1,33 @@
+
+create project creation backend and linking to frontend
+creating endpoint to fetch all projects and showing on frontend
+endpoint to create project outline
+endpoint to fetch project outline
+endpoint to create character outline 
+endpoint to fetch character outline
+
+TALAL's editor part integration
+
+ASHAD's chatbot --
+    .env credentials missing rest backend  setup done..
+    frontend request linking    
+    frontend pushing in the chat view
+    maintaing chat history on the backend
+
+
+SPRINTS --
+creating endpoint to initiate new sprint
+changing status (completion/failure)
+
+
+EXPORTING --
+backend endpoint creation 
+Frontend linking
+
+
+FRONTEND --
+home page (static)
+GIFs
+
+
+PPT 

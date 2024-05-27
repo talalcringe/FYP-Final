@@ -1,0 +1,75 @@
+.tiptap {
+  @apply p-5 bg-white focus:border-0 h-[65vh] overflow-y-auto;
+}
+
+.tiptap > * + * {
+  @apply mt-3;
+}
+
+.tiptap ul {
+  @apply pl-4 list-disc;
+}
+
+.tiptap ol {
+  @apply pl-4 list-decimal;
+}
+
+.tiptap h1 {
+  @apply leading-tight text-4xl font-bold;
+}
+
+.tiptap h2 {
+  @apply leading-tight text-3xl font-bold;
+}
+
+.tiptap h3 {
+  @apply leading-tight text-2xl font-bold;
+}
+
+.tiptap h4 {
+  @apply leading-tight text-xl font-bold;
+}
+
+.tiptap h5 {
+  @apply leading-tight text-lg font-bold;
+}
+
+.tiptap h6 {
+  @apply leading-tight text-base font-bold;
+}
+
+.tiptap code {
+  @apply border border-gray-600 rounded bg-slate-100 text-gray-900;
+}
+
+.tiptap pre {
+  @apply bg-slate-200 text-gray-900 p-3 rounded;
+}
+
+.tiptap pre code {
+  @apply border-0 text-gray-900 bg-transparent;
+}
+
+.tiptap img {
+  @apply w-full h-auto;
+}
+
+.tiptap blockquote {
+  @apply pl-4 border-l-2 border-opacity-10;
+}
+
+.tiptap hr {
+  @apply border-t-2 border-opacity-10 my-8;
+}
+
+.tiptap a {
+  @apply text-cerulean underline;
+}
+
+.is-active {
+  @apply text-ghostWhite bg-cerulean;
+}
+
+.not-active {
+  @apply text-cerulean;
+}
