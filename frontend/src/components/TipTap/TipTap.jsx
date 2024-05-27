@@ -85,8 +85,15 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
   });
 
   useEffect(() => {
+    const getPrevWordCount = async () => {
+      const pageJSON = await indexedDBService.getItem(pageId);
+      const prevWordCount = pageJSON ? pageJSON.words : 0;
+      setWordCount(prevWordCount);
+      console.log('prevWordCount: ', prevWordCount);
+    };
     if (editor && content && content !== '<p></p>') {
       editor.commands.setContent(content);
+      getPrevWordCount();
     }
   }, [pageId, editor]);
 
@@ -165,7 +172,10 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
           fonts={fonts}
         />
       </FloatingMenu>
-      <BubbleMenu editor={editor}>
+      <BubbleMenu
+        editor={editor}
+        tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
+      >
         <Bubble
           editor={editor}
           style={styles.bubble.style}
