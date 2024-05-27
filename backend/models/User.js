@@ -16,8 +16,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     token: {
-      type: String,
-      default: "",
+      type: Object,
       required: true,
     },
     cookies: {
