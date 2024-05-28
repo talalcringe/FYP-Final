@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { v4 } from 'uuid';
+import React, { useEffect, useState } from "react";
+import { v4 } from "uuid";
 
-import TipTap from '../components/TipTap/TipTap';
-import LeftSidebar from '../components/Editor/LeftSidebar';
-import RightSidebar from '../components/Editor/RightSidebar';
+import TipTap from "../components/TipTap/TipTap";
+import LeftSidebar from "../components/Editor/LeftSidebar";
+import RightSidebar from "../components/Editor/RightSidebar";
 
-import indexedDBService from '../services/indexedDB';
+import axios from "axios";
+import { createProjectFolderAndGetIdUrl } from "../utils/urls";
+
+import indexedDBService from "../services/indexedDB";
 
 // let content = `
 // <h2>
@@ -38,14 +41,17 @@ import indexedDBService from '../services/indexedDB';
 // </blockquote>
 // `;
 
+let projectFolderChecked = false;
+const projectID = "1";
+
 const EditorInstance = ({ title, fonts }) => {
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [pages, setPages] = useState([]);
   const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
 
   useEffect(() => {
     const fetchPages = async () => {
-      const savedPages = await indexedDBService.getItem('pages');
+      const savedPages = await indexedDBService.getItem("pages");
       // console.log('savedPages', savedPages);
 
       if (savedPages === null || savedPages.length === 0) {
@@ -56,20 +62,40 @@ const EditorInstance = ({ title, fonts }) => {
       }
     };
     fetchPages();
+    const checkProjectFolder = async () => {
+      try {
+        const response = await axios.get(
+          createProjectFolderAndGetIdUrl(projectID),
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (response.status === 200) {
+          console.log("Project folder created successfully");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (!projectFolderChecked) {
+      checkProjectFolder();
+    }
+    projectFolderChecked = true;
   }, []);
 
   useEffect(() => {
     const fetchContent = async () => {
       const savedPage = await indexedDBService.getItem(selectedPageId);
       console.log(
-        '5555555555555555555555555555555555555555555555savedPages: ',
+        "5555555555555555555555555555555555555555555555savedPages: ",
         pages,
-        'selectedPageId: ',
+        "selectedPageId: ",
         selectedPageId,
-        'savedPage: ',
+        "savedPage: ",
         savedPage
       );
-      const savedContent = savedPage ? savedPage.content : ' ';
+      const savedContent = savedPage ? savedPage.content : " ";
       setContent(savedContent);
     };
 
@@ -77,7 +103,7 @@ const EditorInstance = ({ title, fonts }) => {
   }, [selectedPageId]);
 
   useEffect(() => {
-    console.log('contentAfterIdChange', content);
+    console.log("contentAfterIdChange", content);
   }, [content]);
 
   const newPage = async () => {
@@ -89,7 +115,7 @@ const EditorInstance = ({ title, fonts }) => {
       ...pages.slice(currentIndex + 1),
     ];
     setPages(newPages); // Update the pages state
-    await indexedDBService.setItem('pages', newPages);
+    await indexedDBService.setItem("pages", newPages);
     setSelectedPageId(newPageId); // Select the new page
     // setContent('');
   };
@@ -106,7 +132,7 @@ const EditorInstance = ({ title, fonts }) => {
       const index = pages.indexOf(selectedPageId);
       // console.log('Pages before deletion', pages);
       if (pages.length === 1) {
-        console.log('here');
+        console.log("here");
         old = false;
       } else if (index === pages.length - 1) {
         setSelectedPageId(pages[index - 1]);
@@ -119,26 +145,26 @@ const EditorInstance = ({ title, fonts }) => {
     const newPages = pages.filter((page) => page !== selectedPageId);
     var old = true;
 
-    await indexedDBService.setItem('pages', newPages);
+    await indexedDBService.setItem("pages", newPages);
     await indexedDBService.deleteItem(selectedPageId);
 
     selectNextPage();
     setPages(newPages);
     if (!old) {
-      console.log('PAGESBEFORE: ', pages);
+      console.log("PAGESBEFORE: ", pages);
       const newPageId = v4();
       const newPages = [newPageId];
       setPages(newPages); // Update the pages state
-      await indexedDBService.setItem('pages', newPages);
+      await indexedDBService.setItem("pages", newPages);
       setSelectedPageId(newPageId); // Select the new page
-      console.log('PAGESAFTER: ', pages, newPageId);
+      console.log("PAGESAFTER: ", pages, newPageId);
     }
   };
 
   return (
-    <div className='flex h-full'>
+    <div className="flex h-full">
       {/* Sidebar for selecting pages */}
-      <div className='flex items-end h-full w-[15vw]'>
+      <div className="flex items-end h-full w-[15vw]">
         <LeftSidebar
           pages={pages}
           selectedPageId={selectedPageId}
@@ -148,7 +174,7 @@ const EditorInstance = ({ title, fonts }) => {
       </div>
 
       {/* Main area for displaying the selected page */}
-      <div className='p-4 w-[75vw] h-full'>
+      <div className="p-4 w-[75vw] h-full">
         {selectedPageId && content && (
           <TipTap
             key={selectedPageId}
@@ -162,7 +188,7 @@ const EditorInstance = ({ title, fonts }) => {
       </div>
 
       {/* Sidebar for selecting modals */}
-      <div className='flex align-self-end justify-self-end h-full w-[15vw]'>
+      <div className="flex align-self-end justify-self-end h-full w-[15vw]">
         <RightSidebar />
       </div>
     </div>

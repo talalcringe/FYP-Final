@@ -22,7 +22,7 @@ exports.createPageFolder = async (req, res, next) => {
     const drive = google.drive({ version: "v3", auth: oAuth2Client });
 
     // Ensure the "ProductiveWriting" folder exists and get its ID
-    const productiveWritingFolderId = await ensureFolderExists(drive);
+    const productiveWritingFolderId = await ensureSiteFolderExists(drive);
 
     // Check if the folder for the page number exists
     const pageFolderId = await getPageFolderId(
@@ -99,6 +99,64 @@ exports.createTextFilesAndUpload = async (req, res, next) => {
   }
 };
 
+exports.ensureFoldersExist = async (req, res, next) => {
+  const { token } = req.userData;
+  try {
+    const { projectId } = req.params;
+
+    if (!projectId) {
+      throw new CustomError(400, "Invalid Request - ID or Project not found");
+    }
+    // Set up Google Drive API
+    oAuth2Client.setCredentials(token);
+    const drive = google.drive({ version: "v3", auth: oAuth2Client });
+
+    // Ensure the "ProductiveWriting" folder exists and get its ID
+    const productiveWritingFolderId = await ensureSiteFolderExists(drive);
+
+    const projectFolderId = await getProjectFolderId(
+      drive,
+      productiveWritingFolderId,
+      projectId
+    );
+
+    if (!projectFolderId) {
+      // Folder for the page number doesn't exist, create it
+      // const folderMetadata = {
+      //   name: projectFolderId,
+      //   mimeType: "application/vnd.google-apps.folder",
+      //   parents: [productiveWritingFolderId],
+      // };
+
+      // const folder = await drive.files.create({
+      //   resource: folderMetadata,
+      //   fields: "id",
+      // });
+
+      console.log(
+        `Folder for Porject ${projectFolderId} created successfully: ${folder.data.id}`
+      );
+      res.status(200).json({
+        message: "Folder created successfully",
+        success: true,
+        folderId: folder.data.id,
+      });
+    } else {
+      // Folder for the page number already exists
+      console.log(
+        `Folder for project ${projectId} already exists: ${projectFolderId}`
+      );
+      res.status(200).json({
+        message: "Folder already exists",
+        success: true,
+        folderId: projectFolderId,
+      });
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
 async function checkFileExistsInDrive(fileName, token) {
   try {
     // Create an OAuth2 client with the given credentials
@@ -126,9 +184,9 @@ async function uploadTextFileToDrive(fileName, pagenum, token, text) {
   const drive = google.drive({ version: "v3", auth: oAuth2Client });
 
   // Ensure the "ProductiveWriting" folder exists and get its ID
-  const productiveWritingFolderId = await ensureFolderExists(drive);
+  const productiveWritingFolderId = await ensureSiteFolderExists(drive);
 
-  const pageFolderId = await getPageFolderId(
+  const projectFolderId = await getPageFolderId(
     drive,
     productiveWritingFolderId,
     pagenum
@@ -170,7 +228,7 @@ async function uploadTextFileToDrive(fileName, pagenum, token, text) {
   );
 }
 
-async function ensureFolderExists(drive) {
+async function ensureSiteFolderExists(drive) {
   try {
     // Check if the "ProductiveWriting" folder exists
     const response = await drive.files.list({
@@ -202,6 +260,42 @@ async function ensureFolderExists(drive) {
   }
 }
 
+async function getProjectFolderId(drive, parentFolderId, projectId) {
+  try {
+    const response = await drive.files.list({
+      q: `mimeType='application/vnd.google-apps.folder' and name='${projectId}' and '${parentFolderId}' in parents`,
+      fields: "files(id)",
+    });
+
+    if (response.data.files.length === 1) {
+      return response.data.files[0].id;
+    } else if (
+      response.data.files.length > 1 ||
+      response.data.files.length < 1
+    ) {
+      // Folder for the page number doesn't exist, create it
+      const folderMetadata = {
+        name: `${projectId}`,
+        mimeType: "application/vnd.google-apps.folder",
+        parents: [parentFolderId],
+      };
+
+      const folder = await drive.files.create({
+        resource: folderMetadata,
+        fields: "id",
+      });
+
+      console.log(
+        `Folder for Project ${projectId} created successfully: ${folder.data.id}`
+      );
+      return folder.data.id;
+    }
+  } catch (error) {
+    console.error("Error getting or creating project folder ID:", error);
+    throw error;
+  }
+}
+
 async function getPageFolderId(drive, parentFolderId, pagenum) {
   try {
     const response = await drive.files.list({
@@ -224,7 +318,9 @@ async function getPageFolderId(drive, parentFolderId, pagenum) {
         fields: "id",
       });
 
-      console.log(`Folder for Page ${pagenum} created successfully: ${folder.data.id}`);
+      console.log(
+        `Folder for Page ${pagenum} created successfully: ${folder.data.id}`
+      );
       return folder.data.id;
     }
   } catch (error) {
