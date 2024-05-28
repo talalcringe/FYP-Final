@@ -68,7 +68,7 @@ const EditorInstance = ({ title, fonts }) => {
 
     const calculateAndPrintTotalWordCount = async (pages) => {
       // Fetch the current page data
-      const { savedWords: prevWords } = await fetchCurrPageData();
+      const { savedWords, savedContent } = await fetchCurrPageData();
 
       // Use map to create an array of promises to fetch word counts
       const wordPromises = pages.map(async (pageId) => {
@@ -85,22 +85,20 @@ const EditorInstance = ({ title, fonts }) => {
         0
       );
 
-      // Subtract prevWords
-      const result = totalWordCount - parseInt(prevWords, 10);
+      // Subtract savedWords
+      const result =
+        totalWordCount - parseInt(savedWords, 10) || totalWordCount;
 
       // Print the result
-      console.log('Total Word Count after subtracting prevWords:', result);
+      console.log('Total Word Count after subtracting savedWords:', result);
 
       setTotalWordCount(result);
+      // Fetch current page data and set content
+      setContent(savedContent);
     };
 
-    // Fetch current page data and set content
-    fetchCurrPageData().then(({ savedContent }) => {
-      setContent(savedContent);
-
-      // Assuming 'pages' is available in the current scope
-      calculateAndPrintTotalWordCount(pages);
-    });
+    // Assuming 'pages' is available in the current scope
+    calculateAndPrintTotalWordCount(pages);
   }, [selectedPageId]);
 
   const newPage = async () => {
@@ -157,6 +155,10 @@ const EditorInstance = ({ title, fonts }) => {
   };
 
   const getNextPage = (currentPageId) => {
+    console.log(
+      'getNextPage: -------------------------- ',
+      pages.indexOf(currentPageId) + 1
+    );
     if (currentPageId === pages[pages.length - 1]) return false;
     else return pages[pages.indexOf(currentPageId) + 1];
   };

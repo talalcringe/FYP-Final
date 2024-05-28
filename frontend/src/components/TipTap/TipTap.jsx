@@ -61,20 +61,20 @@ const TipTap = ({
       localStorageService.setItem(pageId, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
 
-      // // Check the editor height
-      // const editorElement = document.querySelector('.tiptap');
-      // const contentHeight = editorElement ? editorElement.scrollHeight : 0;
-      // console.log('contentHeight', contentHeight);
-      // const pageHeight = 1028; // Updated page height limit
+      // Check the editor height
+      const editorElement = document.querySelector('.tiptap');
+      const contentHeight = editorElement ? editorElement.scrollHeight : 0;
+      console.log('contentHeight', contentHeight);
+      const pageHeight = 1028; // Updated page height limit
 
-      // if (contentHeight > pageHeight) {
-      //   const nextPageId = getNextPage(pageId);
-      //   if (!nextPageId) {
-      //     createNewPage();
-      //   } else {
-      //     selectPage(nextPageId);
-      //   }
-      // }
+      if (contentHeight > pageHeight) {
+        const nextPageId = getNextPage(pageId);
+        if (!nextPageId) {
+          createNewPage();
+        } else {
+          selectPage(nextPageId);
+        }
+      }
     },
     onBlur: async ({ editor }) => {
       const content = localStorageService.getItem(pageId);
