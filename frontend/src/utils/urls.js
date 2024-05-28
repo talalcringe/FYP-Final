@@ -6,13 +6,13 @@ export const getLoginUrl = `${authURLs}/getAuthURL`;
 
 const contentURLs = `${baseURl}/content`;
 
-export const sendTextUrl = `${contentURLs}/createTextFilesAndUpload`;
+export const sendFilesUrl = `${contentURLs}/createPageFilesAndUpload`;
 
 export const createProjectFolderAndGetIdUrl = (projectId) =>
   `${contentURLs}/createProjectFolder/${projectId}`;
 
-export const createPageFolderAndGetIdUrl = (pageId) =>
-  `${contentURLs}/createPageFolder/${pageId}`;
+// export const createPageFolderAndGetIdUrl = (pageId) =>
+//   `${contentURLs}/createPageFolder/${pageId}`;
 
 const userRoutes = `${baseURl}/user`;
 

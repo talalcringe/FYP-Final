@@ -4,15 +4,15 @@ const fs = require("fs");
 const verify = require("../utils/JWTVerification");
 
 const {
-  createPageFolder,
-  createTextFilesAndUpload,
+  // createPageFolder,
+  createPageFilesAndUpload,
   ensureFoldersExist,
 } = require("../controllers/contentController");
 
-router.get("/createPageFolder/:pagenumber", verify, createPageFolder);
-
-router.post("/createTextFilesAndUpload", verify, createTextFilesAndUpload);
+// router.get("/createPageFolder/:pagenumber", verify, createPageFolder);
 
 router.get("/createProjectFolder/:projectId", verify, ensureFoldersExist);
+
+router.post("/createPageFilesAndUpload", verify, createPageFilesAndUpload);
 
 module.exports = router;

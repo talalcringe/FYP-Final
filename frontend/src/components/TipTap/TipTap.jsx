@@ -1,49 +1,52 @@
-import './TipTap.css';
+import "./TipTap.css";
 import {
   useEditor,
   EditorContent,
   FloatingMenu,
   BubbleMenu,
-} from '@tiptap/react';
+} from "@tiptap/react";
 
-import Underline from '@tiptap/extension-underline';
-import Link from '@tiptap/extension-link';
-import TextAlign from '@tiptap/extension-text-align';
-import Image from '@tiptap/extension-image';
-import FontFamily from '@tiptap/extension-font-family';
-import TextStyle from '@tiptap/extension-text-style';
-import StarterKit from '@tiptap/starter-kit';
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
+import TextAlign from "@tiptap/extension-text-align";
+import Image from "@tiptap/extension-image";
+import FontFamily from "@tiptap/extension-font-family";
+import TextStyle from "@tiptap/extension-text-style";
+import StarterKit from "@tiptap/starter-kit";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-import MenuBar from './Menus/MenuBar';
-import Floating from './Menus/Floating';
-import Bubble from './Menus/Bubble';
+import MenuBar from "./Menus/MenuBar";
+import Floating from "./Menus/Floating";
+import Bubble from "./Menus/Bubble";
 
-import TitleBar from './Menus/TitleBar';
+import TitleBar from "./Menus/TitleBar";
 
-import FontSize from './customExtensions/FontSize';
+import FontSize from "./customExtensions/FontSize";
 
-import localStorageService from '../../services/localStorage';
-import indexedDBService from '../../services/indexedDB';
-import { getWordCount } from '../../services/utils';
+import localStorageService from "../../services/localStorage";
+import indexedDBService from "../../services/indexedDB";
+import { getWordCount } from "../../services/utils";
+
+import axios from "axios";
+import { sendFilesUrl } from "../../utils/urls";
 
 const extensions = [
   StarterKit,
   Underline,
   Link,
   TextAlign.configure({
-    types: ['heading', 'paragraph'],
+    types: ["heading", "paragraph"],
   }),
   Image,
   FontSize,
   TextStyle,
-  FontFamily.configure({ types: ['textStyle'] }),
+  FontFamily.configure({ types: ["textStyle"] }),
 ];
 
-const chapter = '1';
+const chapter = "1";
 
-const TipTap = ({ id, title, content, deletePage, fonts }) => {
+const TipTap = ({ id, projectId, title, content, deletePage, fonts }) => {
   // console.log('TipTap rendered with id', id, 'content: ', content);
   const [wordCount, setWordCount] = useState(0);
 
@@ -53,8 +56,8 @@ const TipTap = ({ id, title, content, deletePage, fonts }) => {
     onUpdate: ({ editor }) => {
       localStorageService.setItem(id, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
-      console.log('wordCount: ', wordCount);
-      console.log('content', content);
+      console.log("wordCount: ", wordCount);
+      console.log("content", content);
     },
 
     onBlur: async ({ editor }) => {
@@ -80,52 +83,66 @@ const TipTap = ({ id, title, content, deletePage, fonts }) => {
         // console.log('Editor was infact not editable at this point');
       }
     },
-    autofocus: 'end',
+    autofocus: "end",
   });
 
   useEffect(() => {
-    if (editor && content && content !== '<p></p>') {
+    if (editor && content && content !== "<p></p>") {
       editor.commands.setContent(content);
+      const payload = {
+        id: id,
+        data: { projectId: projectId, content: content, words: wordCount },
+      };
+      axios
+        .post(sendFilesUrl, payload, {
+          withCredentials: true,
+        })
+        .then((response) => {
+          console.log("response:", response);
+        })
+        .catch((error) => {
+          console.log("error:", error);
+        });
     }
   }, [id, editor]);
 
   const styles = {
     top: {
       style:
-        'bg-ghostWhite rounded flex justify-center text-2xl items-center w-max mb-1 mx-auto',
+        "bg-ghostWhite rounded flex justify-center text-2xl items-center w-max mb-1 mx-auto",
       blockLabels: {
-        paragraph: '',
-        heading: '',
-        code: '',
-        quote: '',
+        paragraph: "",
+        heading: "",
+        code: "",
+        quote: "",
       },
     },
     floating: {
       style:
-        'border border-cerulean bg-ghostWhite rounded flex-column justify-center items-centerm-auto w-full',
+        "border border-cerulean bg-ghostWhite rounded flex-column justify-center items-centerm-auto w-full",
       blockLabels: {
-        paragraph: 'Paragraph',
-        heading: 'Heading',
-        list: 'List',
-        code: 'Code Block',
-        quote: 'Block Quote',
-        rule: 'Horizontal Rule',
+        paragraph: "Paragraph",
+        heading: "Heading",
+        list: "List",
+        code: "Code Block",
+        quote: "Block Quote",
+        rule: "Horizontal Rule",
       },
     },
     bubble: {
       style:
-        'border border-cerulean bg-ghostWhite rounded flex justify-center items-center w-max mb-1 mx-auto',
+        "border border-cerulean bg-ghostWhite rounded flex justify-center items-center w-max mb-1 mx-auto",
       blockLabels: {
-        paragraph: '',
-        heading: '',
-        code: '',
-        quote: '',
+        paragraph: "",
+        heading: "",
+        code: "",
+        quote: "",
       },
     },
   };
 
   return (
-    <div className='m-0 px-10 h-[50vh] flex-col justify-center items-center'>
+    <div className="m-0 px-10 h-[50vh] flex-col justify-center items-center">
       <TitleBar title={title} wordCount={wordCount} deletePage={deletePage} />
       <MenuBar
         editor={editor}
@@ -153,7 +170,7 @@ const TipTap = ({ id, title, content, deletePage, fonts }) => {
       <EditorContent editor={editor} />
       <FloatingMenu
         editor={editor}
-        tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
+        tippyOptions={{ placement: "bottom-start", hideOnClick: true }}
       >
         <Floating
           editor={editor}

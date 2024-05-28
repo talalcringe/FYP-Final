@@ -69,26 +69,27 @@ exports.createPageFolder = async (req, res, next) => {
 };
 
 //create Text Files And Upload to drive
-exports.createTextFilesAndUpload = async (req, res, next) => {
+exports.createPageFilesAndUpload = async (req, res, next) => {
   const { token } = req.userData;
   try {
-    const { updatedDataFormat } = req.body;
-    let { max, pagenum, text } = updatedDataFormat;
+    const payload = req.body;
+    let { id, data } = payload;
+    let { projectId, content, words } = data;
 
-    let fileName = `page_${pagenum}_v${max}.txt`;
+    let fileName = `${id}.txt`;
 
     // Check if a file with the same name already exists in Google Drive
-    let fileExists = await checkFileExistsInDrive(fileName, token);
+    // let fileExists = await checkFileExistsInDrive(fileName, token);
 
     // If file exists, increment max value, create new filename and upload
-    while (fileExists) {
-      max++;
-      fileName = `page_${pagenum}_v${max}.txt`;
-      fileExists = await checkFileExistsInDrive(fileName, token);
-    }
+    // while (fileExists) {
+    //   max++;
+    //   fileName = `page_${pagenum}_v${max}.txt`;
+    //   fileExists = await checkFileExistsInDrive(fileName, token);
+    // }
 
     // Upload the text file to Google Drive
-    await uploadTextFileToDrive(fileName, pagenum, token, text);
+    await uploadJsonFileToDrive(fileName, projectId, token, payload);
 
     return res.status(200).json({
       success: true,
@@ -168,7 +169,9 @@ async function checkFileExistsInDrive(fileName, token) {
       q: `name='${fileName}'`,
     });
     // If files with the same name are found, return true
-    return response.data.files.length > 0;
+    if (response.data.files.length > 0) {
+      return response.data.files[0].id;
+    }
   } catch (error) {
     console.error("Error checking file existence in Google Drive:", error);
     throw error;
@@ -177,7 +180,7 @@ async function checkFileExistsInDrive(fileName, token) {
 
 //Helpers--------------------------------------------------------------
 
-async function uploadTextFileToDrive(fileName, pagenum, token, text) {
+async function uploadJsonFileToDrive(fileName, projectId, token, payload) {
   oAuth2Client.setCredentials(token);
   // console.log(token);
 
@@ -186,46 +189,72 @@ async function uploadTextFileToDrive(fileName, pagenum, token, text) {
   // Ensure the "ProductiveWriting" folder exists and get its ID
   const productiveWritingFolderId = await ensureSiteFolderExists(drive);
 
-  const projectFolderId = await getPageFolderId(
+  const projectFolderId = await getProjectFolderId(
     drive,
     productiveWritingFolderId,
-    pagenum
+    projectId
   );
 
-  if (!pageFolderId) {
-    throw new CustomError(404, `Folder for Page ${pagenum} not found`);
+  if (!projectFolderId) {
+    throw new CustomError(404, `Folder for Project ${projectId} not found`);
   }
 
   const fileMetadata = {
     name: fileName,
-    parents: [pageFolderId], // Specify the folder ID as the parent
+    parents: [projectFolderId], // Specify the folder ID as the parent
+  };
+
+  const updatefileMetadata = {
+    name: fileName, // Specify the folder ID as the parent
   };
 
   const media = {
     mimeType: "text/plain",
-    body: textToStream(text),
+    body: textToStream(JSON.stringify(payload)),
   };
 
-  // Upload the text file
-  drive.files.create(
-    {
-      resource: fileMetadata,
-      media: media,
-      fields: "id",
-    },
-    (err, file) => {
-      oAuth2Client.setCredentials(null);
+  const fileExists = await checkFileExistsInDrive(fileName, token);
 
-      if (err) {
-        console.error("Error uploading text file:", err);
-        throw new CustomError(500, `Error uploading text file`);
+  if (fileExists) {
+    // Update the text file
+    drive.files.update(
+      {
+        resource: updatefileMetadata,
+        media: media,
+        fields: "id",
+        fileId: fileExists,
+      },
+      (err, file) => {
+        oAuth2Client.setCredentials(null);
+
+        if (err) {
+          console.error("Error uploading text file:", err);
+          throw new CustomError(500, `Error uploading text file`);
+        }
+
+        console.log(`Text file uploaded successfully: ${file.data.id}`);
       }
+    );
+  } else {
+    // Upload the text file
+    drive.files.create(
+      {
+        resource: fileMetadata,
+        media: media,
+        fields: "id",
+      },
+      (err, file) => {
+        oAuth2Client.setCredentials(null);
 
-      console.log(`Text file uploaded successfully: ${file.data.id}`);
-      // Delete the local text file after upload
-      // fs.unlinkSync(fileName);
-    }
-  );
+        if (err) {
+          console.error("Error uploading text file:", err);
+          throw new CustomError(500, `Error uploading text file`);
+        }
+
+        console.log(`Text file uploaded successfully: ${file.data.id}`);
+      }
+    );
+  }
 }
 
 async function ensureSiteFolderExists(drive) {

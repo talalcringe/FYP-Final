@@ -179,6 +179,7 @@ const EditorInstance = ({ title, fonts }) => {
           <TipTap
             key={selectedPageId}
             id={selectedPageId}
+            projectId={projectID}
             deletePage={deletePage}
             content={content}
             fonts={fonts}
