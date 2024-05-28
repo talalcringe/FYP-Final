@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import SolidButton from '../../Editor/SolidButton';
-import { LuList, LuHeading, LuQuote } from 'react-icons/lu';
+import { LuList, LuHeading, LuQuote, LuMinus } from 'react-icons/lu';
 import { BiParagraph } from 'react-icons/bi';
 import { RiCodeBlock, RiSeparator } from 'react-icons/ri';
 
@@ -89,8 +89,12 @@ const BlockChangeDropDown = ({ editor }) => {
                 infoText={`Change to ${option.label}`}
               />
             ))}
-
-          <SolidButton text={<RiSeparator />} />
+          <SolidButton
+            text={<LuMinus />}
+            onClick={() => editor.chain().focus().clearNodes().run()}
+            color={'bg-poppy'}
+            infoText={`Remove all nodes`}
+          />
         </div>
       )}
     </div>

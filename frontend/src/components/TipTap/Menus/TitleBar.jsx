@@ -1,6 +1,6 @@
 import SolidButton from '../../Editor/SolidButton';
 
-const TitleBar = ({ title, wordCount, deletePage }) => {
+const TitleBar = ({ title, wordCount, totalWordCount, deletePage }) => {
   // console.log('Topbar rendered with page', page);
 
   return (
@@ -8,7 +8,9 @@ const TitleBar = ({ title, wordCount, deletePage }) => {
       <SolidButton text='Delete Page' color='bg-poppy' onClick={deletePage} />
       <h1 className='text-3xl font-bold '>{title}</h1>
       <span className='text-l text-emerald font-semibold m-2 p-2 rounded'>
-        {wordCount} words
+        {`page: ${wordCount} words . total: ${
+          totalWordCount + wordCount
+        } words`}
       </span>
     </div>
   );

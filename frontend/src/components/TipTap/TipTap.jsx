@@ -41,10 +41,17 @@ const extensions = [
   FontFamily.configure({ types: ['textStyle'] }),
 ];
 
-const chapter = '1';
-
-const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
-  // console.log('TipTap rendered with pageId', pageId, 'content: ', content);
+const TipTap = ({
+  pageId,
+  title,
+  totalWordCount,
+  content,
+  deletePage,
+  fonts,
+  createNewPage,
+  getNextPage,
+  selectPage,
+}) => {
   const [wordCount, setWordCount] = useState(0);
 
   const editor = useEditor({
@@ -53,10 +60,22 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
     onUpdate: ({ editor }) => {
       localStorageService.setItem(pageId, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
-      console.log('wordCount: ', wordCount);
-      console.log('content', content);
-    },
 
+      // // Check the editor height
+      // const editorElement = document.querySelector('.tiptap');
+      // const contentHeight = editorElement ? editorElement.scrollHeight : 0;
+      // console.log('contentHeight', contentHeight);
+      // const pageHeight = 1028; // Updated page height limit
+
+      // if (contentHeight > pageHeight) {
+      //   const nextPageId = getNextPage(pageId);
+      //   if (!nextPageId) {
+      //     createNewPage();
+      //   } else {
+      //     selectPage(nextPageId);
+      //   }
+      // }
+    },
     onBlur: async ({ editor }) => {
       const content = localStorageService.getItem(pageId);
       if (editor && editor.isEditable && content) {
@@ -65,11 +84,8 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
           words: wordCount,
         });
         localStorageService.deleteItem(pageId);
-      } else {
-        console.log('Editor was infact not editable at this point');
       }
     },
-
     onDestroy: async () => {
       const content = localStorageService.getItem(pageId);
       if (content) {
@@ -77,11 +93,8 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
           content: content,
           words: wordCount,
         });
-      } else {
-        // console.log('Editor was infact not editable at this point');
       }
     },
-    autofocus: 'end',
   });
 
   useEffect(() => {
@@ -89,13 +102,12 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
       const pageJSON = await indexedDBService.getItem(pageId);
       const prevWordCount = pageJSON ? pageJSON.words : 0;
       setWordCount(prevWordCount);
-      console.log('prevWordCount: ', prevWordCount);
     };
     if (editor && content && content !== '<p></p>') {
       editor.commands.setContent(content);
       getPrevWordCount();
     }
-  }, [pageId, editor]);
+  }, [pageId, editor, content]);
 
   const styles = {
     top: {
@@ -135,7 +147,12 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
   return (
     <div className='flex flex-col justify-center items-center'>
       <div className='sticky top-5 z-10'>
-        <TitleBar title={title} wordCount={wordCount} deletePage={deletePage} />
+        <TitleBar
+          title={title}
+          wordCount={wordCount}
+          totalWordCount={totalWordCount}
+          deletePage={deletePage}
+        />
         <MenuBar
           editor={editor}
           style={styles.top.style}
@@ -160,7 +177,9 @@ const TipTap = ({ pageId, title, content, deletePage, fonts }) => {
           showImage={false}
         />
       </div>
-      <EditorContent editor={editor} />
+      <div>
+        <EditorContent editor={editor} />
+      </div>
       <FloatingMenu
         editor={editor}
         tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
