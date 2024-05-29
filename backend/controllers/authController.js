@@ -67,7 +67,7 @@ exports.getToken = async (req, res, next) => {
 
           // Set the JWT token as a cookie
           res.cookie("access_token", jwtToken);
-          const baseUrl = "http://localhost:5173/dashboard/editor"; // Default to local URL
+          const baseUrl = "http://localhost:5173/dashboard"; // Default to local URL
           // const payload = {
           //   userInfo: user,
           //   redirectUrl: baseUrl,
@@ -97,7 +97,7 @@ exports.getToken = async (req, res, next) => {
 
           // Set the JWT token as a cookie
           res.cookie("access_token", jwtToken);
-          const baseUrl = "http://localhost:5173/dashboard/editor"; // Default to local URL
+          const baseUrl = "http://localhost:5173/dashboard"; // Default to local URL
           // const payload = {
           //   userInfo: user,
           //   redirectUrl: baseUrl,
@@ -119,33 +119,14 @@ exports.getToken = async (req, res, next) => {
 
 exports.getUser = async (req, res, next) => {
   try {
-    const { userId, token } = req.userData;
-
-    // Find the user in the database
-    const user = await User.findOne({ _id: userId });
-    // console.log("DToken", user.token);
-    // console.log("CToken", token);
-    if (!user || !_.isEqual(user.token, token)) {
-      throw new CustomError(402, "Incorrect details");
-    }
-
-    // Generate a new JWT token
-    const newJwtToken = jwt.sign(
-      { userId: userId, token: token },
-      process.env.SECRET_KEY
+    const { _id, fullname, profileImage } = req.user;
+    const response = generateResponseWithPayload(
+      200,
+      true,
+      "User data fetched successfully",
+      { _id, fullname, profileImage }
     );
-
-    // Set the new token as a cookie
-    res.cookie("access_token", newJwtToken, {
-      httpOnly: true,
-      // Other cookie options like secure: true if your site is served over HTTPS
-    });
-
-    return res.json({
-      success: true,
-      message: "User cookie created and sent successfully",
-      user: user,
-    });
+    return res.status(200).json(response);
   } catch (error) {
     return next(error);
   }

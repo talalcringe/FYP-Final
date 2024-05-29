@@ -6,7 +6,6 @@ import Buttons from "../buttons/NormalButtons";
 import { getLoginUrl, headers } from "../../utils/urls";
 
 const Login = () => {
-  const dispatch = useDispatch();
   const getSignInUrl = async () => {
     try {
       console.log(getLoginUrl);

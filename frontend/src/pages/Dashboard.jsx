@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PencilIcon, DateIcon, PersonIcon } from "../utils/icons";
 import { Link } from "react-router-dom";
 import cover from "../assets/cover.png";
 import DashboardButtons from "../components/buttons/DashboardButtons";
 import NeedleChart from "../charts/NeedleChart";
 import DoughnutChart from "../charts/DoughnutChart";
+import { headers, getAllProjects, getUserInformation } from "../utils/urls";
+import { errorToast } from "../utils/notifications";
+import { useDispatch } from "react-redux";
+import { Login as loginAction } from "../store/userSlice";
 
 const ProjectsData = [
   {
@@ -53,6 +57,10 @@ const Options = [
 
 const Dashboard = () => {
   const [menuStates, setMenuStates] = useState(ProjectsData.map(() => false));
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+
+  const dispatch = useDispatch();
 
   const toggleMenu = (index) => {
     setMenuStates((prev) => {
@@ -62,17 +70,65 @@ const Dashboard = () => {
     });
   };
 
+  // useEffect(() => {
+  //   const fetchProjectsData = async () => {
+  //     try {
+  //       let response = await fetch(getAllProjects, {
+  //         method: "GET",
+  //         headers,
+  //         credentials: "include",
+  //       });
+
+  //       response = await response.json();
+
+  //       if (response.success == true) {
+  //         console.log(response);
+  //         ClearForm();
+  //       } else {
+  //         throw new Error(response.message || fallbackErrorMessage);
+  //       }
+  //     } catch (error) {
+  //       setError(error.message);
+  //       errorToast(error.message);
+  //     }
+  //   };
+  //   fetchProjectsData();
+  // }, []);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        let response = await fetch(getUserInformation, {
+          method: "GET",
+          headers,
+          credentials: "include",
+        });
+
+        response = await response.json();
+
+        if (response.success == true) {
+          setUser(response.data);
+          dispatch(loginAction(response.data));
+        } else {
+          throw new Error(response.message || fallbackErrorMessage);
+        }
+      } catch (error) {
+        setError(error.message);
+        errorToast(error.message);
+      }
+    };
+    getUserData();
+  }, []);
+
   return (
     <section className="bg-gray-200">
       <div className="p-4 max-w-7xl mx-auto mt-[90px]">
         <div className="top max-w-xl mx-auto mt-3 flex justify-center items-center gap:8  md:gap-10 bg-white py-8 rounded-md flex-col md:flex-row">
-          <div className="left-side w-16 h-16 rounded-full bg-yellow grid place-items-center">
-            J
+          <div className="left-side w-16 h-16 rounded-full bg-yellow grid place-items-center overflow-hidden">
+            <img src={user?.profileImage} alt={user?.fullName} />
           </div>
           <div className="right-side mt-4 md:mt-0">
-            <h4 className="font-bold text-center md:text-left text-lg">
-              John Doe
-            </h4>
+            <h4 className="font-bold text-center md:text-left text-lg">{}</h4>
             <div className="flex justify-center items-center gap-2">
               <p>Age 6</p>
               <span>.</span>

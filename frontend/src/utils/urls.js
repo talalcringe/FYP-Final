@@ -4,12 +4,21 @@ const authURLs = `${baseURl}/auth`;
 
 export const getLoginUrl = `${authURLs}/getAuthURL`;
 
+export const getUserInformation = `${authURLs}/getUserInformation`;
+
 const contentURLs = `${baseURl}/content`;
 
 export const sendTextUrl = `${contentURLs}/createTextFilesAndUpload`;
 
 export const createPageFolderAndGetIdUrl = (pageId) =>
   `${contentURLs}/createPageFolder/${pageId}`;
+
+export const createSprint = `${contentURLs}/createSprint`;
+
+export const updateSprintStatus = (sprintid) =>
+  `${contentURLs}/modifySprintStatus/${sprintid}`;
+
+export const getAllProjects = `${contentURLs}/getAllProjects`;
 
 const userRoutes = `${baseURl}/user`;
 
