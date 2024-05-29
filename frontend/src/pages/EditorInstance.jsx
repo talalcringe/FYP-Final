@@ -38,37 +38,6 @@ import indexedDBService from '../services/indexedDB';
 // </blockquote>
 // `;
 
-// let content = `
-// <h2>
-//   Hi there,
-// </h2>
-// <p>
-//   this is a <em>basic</em> example of <strong>tiptap</strong>. Sure, there are all kind of basic text styles you’d probably expect from a text editor. But wait until you see the lists:
-// </p>
-// <ul>
-//   <li>
-//     That’s a bullet list with one …
-//   </li>
-//   <li>
-//     … or two list items.
-//   </li>
-// </ul>
-// <p>
-//   Isn’t that great? And all of that is editable. But wait, there’s more. Let’s try a code block:
-// </p>
-// <pre><code class="language-css">body {
-// display: none;
-// }</code></pre>
-// <p>
-//   I know, I know, this is impressive. It’s only the tip of the iceberg though. Give it a try and click a little bit around. Don’t forget to check the other examples too.
-// </p>
-// <blockquote>
-//   Wow, that’s amazing. Good work, boy! 👏
-//   <br />
-//   — Mom
-// </blockquote>
-// `;
-
 const EditorInstance = ({ title, fonts }) => {
   const [content, setContent] = useState('');
   const [pages, setPages] = useState([]);
@@ -78,9 +47,7 @@ const EditorInstance = ({ title, fonts }) => {
   useEffect(() => {
     const fetchPages = async () => {
       const savedPages = await indexedDBService.getItem('pages');
-      // console.log('savedPages', savedPages);
 
-      if (savedPages === null || savedPages.length === 0) {
       if (savedPages === null || savedPages.length === 0) {
         newPage();
       } else {
@@ -155,20 +122,16 @@ const EditorInstance = ({ title, fonts }) => {
     setSelectedPageId(pageId);
   };
 
-  // Function to handle page deletion
   const deletePage = async () => {
     const selectNextPage = () => {
       const index = pages.indexOf(selectedPageId);
-      // console.log('Pages before deletion', pages);
       if (pages.length === 1) {
-        console.log('here');
         console.log('here');
         old = false;
       } else if (index === pages.length - 1) {
         setSelectedPageId(pages[index - 1]);
       } else {
         setSelectedPageId(pages[index + 1]);
-        // console.log(selectedPageId);
       }
     };
 
@@ -182,10 +145,9 @@ const EditorInstance = ({ title, fonts }) => {
     setPages(newPages);
     if (!old) {
       console.log('PAGESBEFORE: ', pages);
-      console.log('PAGESBEFORE: ', pages);
       const newPageId = v4();
       const newPages = [newPageId];
-      setPages(newPages); // Update the pages state
+      setPages(newPages);
       await indexedDBService.setItem('pages', newPages);
       setSelectedPageId(newPageId);
       console.log('PAGESAFTER: ', pages, newPageId);
@@ -202,9 +164,8 @@ const EditorInstance = ({ title, fonts }) => {
   };
 
   return (
-    <div className='flex h-full'>
-      {/* Sidebar for selecting pages */}
-      <div className='flex items-end h-full w-[15vw]'>
+    <div className='relative flex justify-between w-screen h-full'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <LeftSidebar
           pages={pages}
           selectedPageId={selectedPageId}
@@ -212,23 +173,23 @@ const EditorInstance = ({ title, fonts }) => {
           newPage={newPage}
         />
       </div>
-
-      {/* Main area for displaying the selected page */}
-      <div className='p-4 w-[75vw] h-full'>
+      <div className='p-4 w-[40vw] h-full'>
         {selectedPageId && content && (
           <TipTap
             key={selectedPageId}
-            id={selectedPageId}
+            pageId={selectedPageId}
+            totalWordCount={totalWordCount}
             deletePage={deletePage}
             content={content}
             fonts={fonts}
             title={title}
+            createNewPage={createNewPage}
+            getNextPage={getNextPage}
+            selectPage={selectPage}
           />
         )}
       </div>
-
-      {/* Sidebar for selecting modals */}
-      <div className='flex align-self-end justify-self-end h-full w-[15vw]'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <RightSidebar />
       </div>
     </div>
