@@ -42,11 +42,11 @@ const EditorInstance = ({ title, fonts }) => {
   const [content, setContent] = useState('');
   const [pages, setPages] = useState([]);
   const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
+  const [totalWordCount, setTotalWordCount] = useState(0);
 
   useEffect(() => {
     const fetchPages = async () => {
       const savedPages = await indexedDBService.getItem('pages');
-      // console.log('savedPages', savedPages);
 
       if (savedPages === null || savedPages.length === 0) {
         newPage();
@@ -59,26 +59,47 @@ const EditorInstance = ({ title, fonts }) => {
   }, []);
 
   useEffect(() => {
-    const fetchContent = async () => {
+    const fetchCurrPageData = async () => {
       const savedPage = await indexedDBService.getItem(selectedPageId);
-      console.log(
-        '5555555555555555555555555555555555555555555555savedPages: ',
-        pages,
-        'selectedPageId: ',
-        selectedPageId,
-        'savedPage: ',
-        savedPage
-      );
       const savedContent = savedPage ? savedPage.content : ' ';
+      const savedWords = savedPage ? savedPage.words : ' ';
+      return { savedWords, savedContent };
+    };
+
+    const calculateAndPrintTotalWordCount = async (pages) => {
+      // Fetch the current page data
+      const { savedWords, savedContent } = await fetchCurrPageData();
+
+      // Use map to create an array of promises to fetch word counts
+      const wordPromises = pages.map(async (pageId) => {
+        const savedPage = await indexedDBService.getItem(pageId);
+        return savedPage ? savedPage.words : 0; // Assuming words is a number
+      });
+
+      // Use Promise.all to wait for all promises to resolve
+      const wordsArray = await Promise.all(wordPromises);
+
+      // Calculate the total word count
+      const totalWordCount = wordsArray.reduce(
+        (acc, words) => acc + parseInt(words, 10),
+        0
+      );
+
+      // Subtract savedWords
+      const result =
+        totalWordCount - parseInt(savedWords, 10) || totalWordCount;
+
+      // Print the result
+      console.log('Total Word Count after subtracting savedWords:', result);
+
+      setTotalWordCount(result);
+      // Fetch current page data and set content
       setContent(savedContent);
     };
 
-    fetchContent();
+    // Assuming 'pages' is available in the current scope
+    calculateAndPrintTotalWordCount(pages);
   }, [selectedPageId]);
-
-  useEffect(() => {
-    console.log('contentAfterIdChange', content);
-  }, [content]);
 
   const newPage = async () => {
     const newPageId = v4();
@@ -88,23 +109,22 @@ const EditorInstance = ({ title, fonts }) => {
       newPageId,
       ...pages.slice(currentIndex + 1),
     ];
-    setPages(newPages); // Update the pages state
+    setPages(newPages);
     await indexedDBService.setItem('pages', newPages);
-    setSelectedPageId(newPageId); // Select the new page
-    // setContent('');
+    setSelectedPageId(newPageId);
   };
 
-  // Function to handle page selection
+  const createNewPage = () => {
+    newPage();
+  };
+
   const selectPage = (pageId) => {
-    // console.log('Selecting page', pageId);
     setSelectedPageId(pageId);
   };
 
-  // Function to handle page deletion
   const deletePage = async () => {
     const selectNextPage = () => {
       const index = pages.indexOf(selectedPageId);
-      // console.log('Pages before deletion', pages);
       if (pages.length === 1) {
         console.log('here');
         old = false;
@@ -112,7 +132,6 @@ const EditorInstance = ({ title, fonts }) => {
         setSelectedPageId(pages[index - 1]);
       } else {
         setSelectedPageId(pages[index + 1]);
-        // console.log(selectedPageId);
       }
     };
 
@@ -128,17 +147,25 @@ const EditorInstance = ({ title, fonts }) => {
       console.log('PAGESBEFORE: ', pages);
       const newPageId = v4();
       const newPages = [newPageId];
-      setPages(newPages); // Update the pages state
+      setPages(newPages);
       await indexedDBService.setItem('pages', newPages);
-      setSelectedPageId(newPageId); // Select the new page
+      setSelectedPageId(newPageId);
       console.log('PAGESAFTER: ', pages, newPageId);
     }
   };
 
+  const getNextPage = (currentPageId) => {
+    console.log(
+      'getNextPage: -------------------------- ',
+      pages.indexOf(currentPageId) + 1
+    );
+    if (currentPageId === pages[pages.length - 1]) return false;
+    else return pages[pages.indexOf(currentPageId) + 1];
+  };
+
   return (
-    <div className='flex h-full'>
-      {/* Sidebar for selecting pages */}
-      <div className='flex items-end h-full w-[15vw]'>
+    <div className='relative flex justify-between w-screen h-full'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <LeftSidebar
           pages={pages}
           selectedPageId={selectedPageId}
@@ -146,23 +173,23 @@ const EditorInstance = ({ title, fonts }) => {
           newPage={newPage}
         />
       </div>
-
-      {/* Main area for displaying the selected page */}
-      <div className='p-4 w-[75vw] h-full'>
+      <div className='p-4 w-[40vw] h-full'>
         {selectedPageId && content && (
           <TipTap
             key={selectedPageId}
-            id={selectedPageId}
+            pageId={selectedPageId}
+            totalWordCount={totalWordCount}
             deletePage={deletePage}
             content={content}
             fonts={fonts}
             title={title}
+            createNewPage={createNewPage}
+            getNextPage={getNextPage}
+            selectPage={selectPage}
           />
         )}
       </div>
-
-      {/* Sidebar for selecting modals */}
-      <div className='flex align-self-end justify-self-end h-full w-[15vw]'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <RightSidebar />
       </div>
     </div>
