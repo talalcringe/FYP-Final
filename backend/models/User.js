@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     projects: {
-      type: [String],
+      type: [Object],
       default: [],
     },
     chats: {

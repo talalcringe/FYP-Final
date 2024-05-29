@@ -42,9 +42,9 @@ import indexedDBService from "../services/indexedDB";
 // `;
 
 let projectFolderChecked = false;
-const projectID = "1";
+// const projectID = "1";
 
-const EditorInstance = ({ title, fonts }) => {
+const EditorInstance = ({ title, fonts, projectId }) => {
   const [content, setContent] = useState("");
   const [pages, setPages] = useState([]);
   const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
@@ -65,7 +65,7 @@ const EditorInstance = ({ title, fonts }) => {
     const checkProjectFolder = async () => {
       try {
         const response = await axios.get(
-          createProjectFolderAndGetIdUrl(projectID),
+          createProjectFolderAndGetIdUrl(projectId),
           {
             withCredentials: true,
           }
@@ -179,7 +179,7 @@ const EditorInstance = ({ title, fonts }) => {
           <TipTap
             key={selectedPageId}
             id={selectedPageId}
-            projectId={projectID}
+            projectId={projectId}
             deletePage={deletePage}
             content={content}
             fonts={fonts}

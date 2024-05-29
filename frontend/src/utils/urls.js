@@ -8,6 +8,9 @@ const contentURLs = `${baseURl}/content`;
 
 export const sendFilesUrl = `${contentURLs}/createPageFilesAndUpload`;
 
+export const createProject = (projectId) =>
+  `${contentURLs}/createProject/${projectId}`;
+
 export const createProjectFolderAndGetIdUrl = (projectId) =>
   `${contentURLs}/createProjectFolder/${projectId}`;
 

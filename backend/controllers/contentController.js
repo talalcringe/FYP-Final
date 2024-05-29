@@ -2,7 +2,74 @@ require("dotenv").config();
 const { google } = require("googleapis");
 const CustomError = require("../ErrorHandling/Error");
 const { oAuth2Client } = require("../utils/oAuth.js");
+const Project = require("../models/Project");
+const User = require("../models/User");
 const { Readable } = require("stream");
+
+exports.handleFormSubmission = async (req, res, next) => {
+  try {
+    const {
+      title,
+      authors,
+      subtitle,
+      seriesInfo,
+      description,
+      image,
+      genre,
+      projectId,
+    } = req.body;
+
+    const { userId } = req.userData;
+
+    // Validate input data if necessary
+    if (!title || !authors) {
+      throw new CustomError(400, "Required fields are missing");
+    }
+
+    // Handle the uploaded file
+    // if (!image) {
+    //   return res.status(400).json({ error: "Image upload failed" });
+    // }
+
+    // Save the data to the database or perform other actions
+    // For now, just return a success response
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new CustomError(404, "User not found");
+    }
+
+    const project = await Project.create({
+      title,
+      authors,
+      subtitle,
+      seriesInfo,
+      description,
+      image,
+      genre,
+      projectId,
+    });
+
+    user.projects.push(projectId);
+    await user.save();
+
+    res.status(200).json({
+      message: "Project created successfully",
+      data: {
+        projectId,
+        title,
+        authors,
+        subtitle,
+        seriesInfo,
+        description,
+        genre,
+        image,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 //Create Page Folder on drive for new page
 exports.createPageFolder = async (req, res, next) => {
@@ -137,46 +204,28 @@ exports.ensureFoldersExist = async (req, res, next) => {
       console.log(
         `Folder for Porject ${projectFolderId} created successfully: ${folder.data.id}`
       );
-      res.status(200).json({
-        message: "Folder created successfully",
-        success: true,
-        folderId: folder.data.id,
-      });
+      // res.status(200).json({
+      //   message: "Folder created successfully",
+      //   success: true,
+      //   folderId: folder.data.id,
+      // });
+      next();
     } else {
       // Folder for the page number already exists
       console.log(
         `Folder for project ${projectId} already exists: ${projectFolderId}`
       );
-      res.status(200).json({
-        message: "Folder already exists",
-        success: true,
-        folderId: projectFolderId,
-      });
+      // res.status(200).json({
+      //   message: "Folder already exists",
+      //   success: true,
+      //   folderId: projectFolderId,
+      // });
+      next();
     }
   } catch (error) {
     return next(error);
   }
 };
-
-async function checkFileExistsInDrive(fileName, token) {
-  try {
-    // Create an OAuth2 client with the given credentials
-    oAuth2Client.setCredentials(token);
-
-    // Use the Google Drive API to list files
-    const drive = google.drive({ version: "v3", auth: oAuth2Client });
-    const response = await drive.files.list({
-      q: `name='${fileName}'`,
-    });
-    // If files with the same name are found, return true
-    if (response.data.files.length > 0) {
-      return response.data.files[0].id;
-    }
-  } catch (error) {
-    console.error("Error checking file existence in Google Drive:", error);
-    throw error;
-  }
-}
 
 //Helpers--------------------------------------------------------------
 
@@ -254,6 +303,26 @@ async function uploadJsonFileToDrive(fileName, projectId, token, payload) {
         console.log(`Text file uploaded successfully: ${file.data.id}`);
       }
     );
+  }
+}
+
+async function checkFileExistsInDrive(fileName, token) {
+  try {
+    // Create an OAuth2 client with the given credentials
+    oAuth2Client.setCredentials(token);
+
+    // Use the Google Drive API to list files
+    const drive = google.drive({ version: "v3", auth: oAuth2Client });
+    const response = await drive.files.list({
+      q: `name='${fileName}'`,
+    });
+    // If files with the same name are found, return true
+    if (response.data.files.length > 0) {
+      return response.data.files[0].id;
+    }
+  } catch (error) {
+    console.error("Error checking file existence in Google Drive:", error);
+    throw error;
   }
 }
 
