@@ -95,8 +95,10 @@ const EditorInstance = ({ title, fonts }) => {
       });
     }
 
+    console('selectedBefore', selectedPageId);
     // Set the selected page ID after the pages state is updated
     setSelectedPageId(newPageId);
+    console('selectedAfter', selectedPageId);
   };
 
   const createNewPage = (content = '') => {
