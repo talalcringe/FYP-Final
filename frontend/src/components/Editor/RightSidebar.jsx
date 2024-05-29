@@ -51,7 +51,7 @@ const RightSidebar = ({}) => {
   };
 
   return (
-    <div className="bg-ghostWhite text-cerulean flex flex-col justify-start items-center  mx-2 p-0 h-[86vh] w-full rounded overflow-auto">
+    <div className="bg-ghostWhite text-cerulean flex flex-col justify-start items-center py-8 mx-2 p-0 h-[100vh] w-full overflow-auto">
       {chatmodalsidebar && (
         <SideBar
           status={chatmodalsidebar}

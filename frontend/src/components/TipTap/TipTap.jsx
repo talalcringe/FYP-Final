@@ -1,44 +1,44 @@
-import './TipTap.css';
+import "./TipTap.css";
 import {
   useEditor,
   EditorContent,
   FloatingMenu,
   BubbleMenu,
-} from '@tiptap/react';
+} from "@tiptap/react";
 
-import Underline from '@tiptap/extension-underline';
-import Link from '@tiptap/extension-link';
-import TextAlign from '@tiptap/extension-text-align';
-import Image from '@tiptap/extension-image';
-import FontFamily from '@tiptap/extension-font-family';
-import TextStyle from '@tiptap/extension-text-style';
-import StarterKit from '@tiptap/starter-kit';
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
+import TextAlign from "@tiptap/extension-text-align";
+import Image from "@tiptap/extension-image";
+import FontFamily from "@tiptap/extension-font-family";
+import TextStyle from "@tiptap/extension-text-style";
+import StarterKit from "@tiptap/starter-kit";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-import MenuBar from './Menus/MenuBar';
-import Floating from './Menus/Floating';
-import Bubble from './Menus/Bubble';
+import MenuBar from "./Menus/MenuBar";
+import Floating from "./Menus/Floating";
+import Bubble from "./Menus/Bubble";
 
-import TitleBar from './Menus/TitleBar';
+import TitleBar from "./Menus/TitleBar";
 
-import FontSize from './customExtensions/FontSize';
+import FontSize from "./customExtensions/FontSize";
 
-import localStorageService from '../../services/localStorage';
-import indexedDBService from '../../services/indexedDB';
-import { getWordCount } from '../../services/utils';
+import localStorageService from "../../services/localStorage";
+import indexedDBService from "../../services/indexedDB";
+import { getWordCount } from "../../services/utils";
 
 const extensions = [
   StarterKit,
   Underline,
   Link,
   TextAlign.configure({
-    types: ['heading', 'paragraph'],
+    types: ["heading", "paragraph"],
   }),
   Image,
   FontSize,
   TextStyle,
-  FontFamily.configure({ types: ['textStyle'] }),
+  FontFamily.configure({ types: ["textStyle"] }),
 ];
 
 const TipTap = ({
@@ -88,7 +88,7 @@ const TipTap = ({
       const prevWordCount = pageJSON ? pageJSON.words : 0;
       setWordCount(prevWordCount);
     };
-    if (editor && content && content !== '<p></p>') {
+    if (editor && content && content !== "<p></p>") {
       editor.commands.setContent(content);
       getPrevWordCount();
     }
@@ -97,41 +97,41 @@ const TipTap = ({
   const styles = {
     top: {
       style:
-        'bg-ghostWhite rounded flex justify-center text-2xl items-center w-max mb-1 mx-auto',
+        "bg-ghostWhite rounded flex justify-center text-2xl items-center w-max mb-1 mx-auto",
       blockLabels: {
-        paragraph: '',
-        heading: '',
-        code: '',
-        quote: '',
+        paragraph: "",
+        heading: "",
+        code: "",
+        quote: "",
       },
     },
     floating: {
       style:
-        'border border-cerulean bg-ghostWhite rounded flex-column justify-center items-centerm-auto w-full',
+        "border border-cerulean bg-ghostWhite rounded flex-column justify-center items-centerm-auto w-full",
       blockLabels: {
-        paragraph: 'Paragraph',
-        heading: 'Heading',
-        list: 'List',
-        code: 'Code Block',
-        quote: 'Block Quote',
-        rule: 'Horizontal Rule',
+        paragraph: "Paragraph",
+        heading: "Heading",
+        list: "List",
+        code: "Code Block",
+        quote: "Block Quote",
+        rule: "Horizontal Rule",
       },
     },
     bubble: {
       style:
-        'border border-cerulean bg-ghostWhite rounded flex justify-center items-center w-max mb-1 mx-auto',
+        "border border-cerulean bg-ghostWhite rounded flex justify-center items-center w-max mb-1 mx-auto",
       blockLabels: {
-        paragraph: '',
-        heading: '',
-        code: '',
-        quote: '',
+        paragraph: "",
+        heading: "",
+        code: "",
+        quote: "",
       },
     },
   };
 
   return (
-    <div className='flex flex-col justify-center items-center'>
-      <div className='sticky top-5 z-10'>
+    <div className="flex flex-col justify-center items-center">
+      <div className="sticky top-5 z-1">
         <TitleBar
           title={title}
           wordCount={wordCount}
@@ -167,7 +167,7 @@ const TipTap = ({
       </div>
       <FloatingMenu
         editor={editor}
-        tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
+        tippyOptions={{ placement: "bottom-start", hideOnClick: true }}
       >
         <Floating
           editor={editor}
@@ -178,7 +178,7 @@ const TipTap = ({
       </FloatingMenu>
       <BubbleMenu
         editor={editor}
-        tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
+        tippyOptions={{ placement: "bottom-start", hideOnClick: true }}
       >
         <Bubble
           editor={editor}

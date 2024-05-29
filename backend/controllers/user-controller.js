@@ -52,11 +52,6 @@ exports.getPixabayImages = async (req, res, next) => {
   }
 };
 
-exports.createProjectController = async (req, res, next) => {
-  const { title, authors, subtitle, seriesinfo, description, genre, isbn } =
-    req.body;
-};
-
 exports.getDefaultMusic = async (req, res, next) => {
   try {
     const response = await listAll(audioListRef);

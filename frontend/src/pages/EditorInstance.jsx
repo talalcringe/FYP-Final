@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { v4 } from 'uuid';
+import React, { useEffect, useState } from "react";
+import { v4 } from "uuid";
 
-import TipTap from '../components/TipTap/TipTap';
-import LeftSidebar from '../components/Editor/LeftSidebar';
-import RightSidebar from '../components/Editor/RightSidebar';
+import TipTap from "../components/TipTap/TipTap";
+import LeftSidebar from "../components/Editor/LeftSidebar";
+import RightSidebar from "../components/Editor/RightSidebar";
 
-import indexedDBService from '../services/indexedDB';
+import indexedDBService from "../services/indexedDB";
 
 // let content = `
 // <h2>
@@ -39,14 +39,14 @@ import indexedDBService from '../services/indexedDB';
 // `;
 
 const EditorInstance = ({ title, fonts }) => {
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [pages, setPages] = useState([]);
   const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
   const [totalWordCount, setTotalWordCount] = useState(0);
 
   useEffect(() => {
     const fetchPages = async () => {
-      const savedPages = await indexedDBService.getItem('pages');
+      const savedPages = await indexedDBService.getItem("pages");
 
       if (savedPages === null || savedPages.length === 0) {
         newPage();
@@ -61,8 +61,8 @@ const EditorInstance = ({ title, fonts }) => {
   useEffect(() => {
     const fetchCurrPageData = async () => {
       const savedPage = await indexedDBService.getItem(selectedPageId);
-      const savedContent = savedPage ? savedPage.content : ' ';
-      const savedWords = savedPage ? savedPage.words : ' ';
+      const savedContent = savedPage ? savedPage.content : " ";
+      const savedWords = savedPage ? savedPage.words : " ";
       return { savedWords, savedContent };
     };
 
@@ -90,7 +90,7 @@ const EditorInstance = ({ title, fonts }) => {
         totalWordCount - parseInt(savedWords, 10) || totalWordCount;
 
       // Print the result
-      console.log('Total Word Count after subtracting savedWords:', result);
+      console.log("Total Word Count after subtracting savedWords:", result);
 
       setTotalWordCount(result);
       // Fetch current page data and set content
@@ -110,7 +110,7 @@ const EditorInstance = ({ title, fonts }) => {
       ...pages.slice(currentIndex + 1),
     ];
     setPages(newPages);
-    await indexedDBService.setItem('pages', newPages);
+    await indexedDBService.setItem("pages", newPages);
     setSelectedPageId(newPageId);
   };
 
@@ -126,7 +126,7 @@ const EditorInstance = ({ title, fonts }) => {
     const selectNextPage = () => {
       const index = pages.indexOf(selectedPageId);
       if (pages.length === 1) {
-        console.log('here');
+        console.log("here");
         old = false;
       } else if (index === pages.length - 1) {
         setSelectedPageId(pages[index - 1]);
@@ -138,25 +138,25 @@ const EditorInstance = ({ title, fonts }) => {
     const newPages = pages.filter((page) => page !== selectedPageId);
     var old = true;
 
-    await indexedDBService.setItem('pages', newPages);
+    await indexedDBService.setItem("pages", newPages);
     await indexedDBService.deleteItem(selectedPageId);
 
     selectNextPage();
     setPages(newPages);
     if (!old) {
-      console.log('PAGESBEFORE: ', pages);
+      console.log("PAGESBEFORE: ", pages);
       const newPageId = v4();
       const newPages = [newPageId];
       setPages(newPages);
-      await indexedDBService.setItem('pages', newPages);
+      await indexedDBService.setItem("pages", newPages);
       setSelectedPageId(newPageId);
-      console.log('PAGESAFTER: ', pages, newPageId);
+      console.log("PAGESAFTER: ", pages, newPageId);
     }
   };
 
   const getNextPage = (currentPageId) => {
     console.log(
-      'getNextPage: -------------------------- ',
+      "getNextPage: -------------------------- ",
       pages.indexOf(currentPageId) + 1
     );
     if (currentPageId === pages[pages.length - 1]) return false;
@@ -164,8 +164,8 @@ const EditorInstance = ({ title, fonts }) => {
   };
 
   return (
-    <div className='relative flex justify-between w-screen h-full'>
-      <div className='sticky top-5 h-full w-[15vw]'>
+    <div className="relative flex justify-between w-screen h-full">
+      <div className="sticky top-0 h-full w-[15vw]">
         <LeftSidebar
           pages={pages}
           selectedPageId={selectedPageId}
@@ -173,7 +173,7 @@ const EditorInstance = ({ title, fonts }) => {
           newPage={newPage}
         />
       </div>
-      <div className='p-4 w-[40vw] h-full'>
+      <div className="p-4 w-[40vw] h-full">
         {selectedPageId && content && (
           <TipTap
             key={selectedPageId}
@@ -189,7 +189,7 @@ const EditorInstance = ({ title, fonts }) => {
           />
         )}
       </div>
-      <div className='sticky top-5 h-full w-[15vw]'>
+      <div className="sticky top-0 h-full w-[15vw]">
         <RightSidebar />
       </div>
     </div>

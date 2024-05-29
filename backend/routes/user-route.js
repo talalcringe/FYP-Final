@@ -10,7 +10,6 @@ const checkForErrors = require("../middlewares/Errors");
 
 const {
   getPixabayImages,
-  createProjectController,
   getDefaultMusic,
   searchFreesoundAudio,
   askGemini,
@@ -26,27 +25,6 @@ router.get(
   [param("query").notEmpty().withMessage("Search query is required")],
   checkForErrors,
   getPixabayImages
-);
-
-// (2) CREATE PROJECT
-router.post(
-  "/create-project",
-  verify,
-  normalverify,
-  [
-    body("title")
-      .notEmpty()
-      .withMessage("Fullname is required")
-      .isLength({ min: 2 })
-      .withMessage("Fullname must be at least 2 characters long"),
-    body("authors")
-      .notEmpty()
-      .withMessage("Email is required")
-      .isEmail()
-      .withMessage("Invalid email address"),
-  ],
-  checkForErrors,
-  createProjectController
 );
 
 // ---------- MUSIC RELATED STUFF-----------------------------
