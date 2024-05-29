@@ -49,7 +49,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
     <>
-      <header className="absolute inset-x-0 top-0 px-5 z-50 bg-blue">
+      <header className="absolute inset-x-0 top-0 px-5 z-[999] bg-blue">
         <nav
           className="flex items-center justify-between px-1 py-3 w-[95%] mx-auto lg:px-8"
           aria-label="Global"

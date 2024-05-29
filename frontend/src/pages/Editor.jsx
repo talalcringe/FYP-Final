@@ -146,7 +146,7 @@ function Editor() {
   // console.log(totalPages);
 
   return (
-    <div className="min-h-[87vh] mt-[90px] bg-alabaster overflow-hidden">
+    <div className="min-h-[87vh] mt-[90px] bg-alabaster overflow-x-clip">
       <EditorInstance title={"Hehe Boii"} fonts={fonts} projectId={projectId} />
     </div>
   );

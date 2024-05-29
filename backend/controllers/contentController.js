@@ -5,6 +5,10 @@ const { oAuth2Client } = require("../utils/oAuth.js");
 const Project = require("../models/Project");
 const User = require("../models/User");
 const { Readable } = require("stream");
+const Project = require("../models/Project");
+const Sprint = require("../models/Sprint");
+const User = require("../models/User");
+const { generateResponseWithPayload } = require("../utils/helpers.js");
 
 exports.handleFormSubmission = async (req, res, next) => {
   try {
@@ -433,3 +437,106 @@ function textToStream(text) {
   readableStream.push(null);
   return readableStream;
 }
+
+exports.createSprint = async () => {
+  try {
+    const { projectid, targetTime, numberOfWords } = req.body;
+
+    const project = await Project.findById(projectid);
+
+    if (!project) {
+      throw new CustomError(404, "No Sprint found");
+    }
+
+    const date = new Date().toDateString();
+
+    const sprint = await Sprint.create({
+      numberOfWords,
+      date,
+      targetTime,
+    });
+
+    project.sprints.push(sprint._id);
+
+    await project.save();
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.modifySprintStatus = async () => {
+  try {
+    const { sprintid } = req.params;
+
+    const { projectid, status } = req.body;
+
+    const project = await Project.findById(projectid);
+
+    if (!project) {
+      throw new CustomError(404, "No project found");
+    }
+
+    const sprint = project.sprints.find((item) => item === sprintid);
+
+    if (!sprint) {
+      throw new CustomError(404, "No Sprint found");
+    }
+
+    sprint.status = status;
+
+    await sprint.save();
+
+    const response = generateResponseWithPayload(
+      201,
+      true,
+      "Sprint Created Successfully",
+      sprint._id
+    );
+
+    return res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAllProjects = async (req, res, next) => {
+  try {
+    const { projects } = req.user;
+
+    const response = generateResponseWithPayload(
+      201,
+      true,
+      "Sprint Created Successfully",
+      projects
+    );
+    return res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getSprintHistoryOfAProject = async (req, res, next) => {
+  try {
+    const { projectid } = req.params;
+
+    const { projects } = req.user;
+
+    const targetProject = projects.find((item) => item === projectid);
+
+    if (!targetProject) {
+      throw new CustomError(404, "No Project found");
+    }
+
+    const targetSprints = targetProject.sprints;
+
+    const response = generateResponseWithPayload(
+      201,
+      true,
+      "Sprint Created Successfully",
+      targetSprints
+    );
+    return res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};

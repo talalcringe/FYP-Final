@@ -7,6 +7,7 @@ import {
   fallbackErrorMessage,
 } from "../../utils/notifications";
 import ExtraButtons from "../buttons/ExtraButtons";
+import Loader from "../../assets/loader.gif";
 
 const ImageList = ({ images }) => {
   return (
@@ -69,7 +70,7 @@ const SearchBar = ({ sendBackResults, changeSending }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full mt-14 py-4 border-b border-blue"
+      className="w-full mt-14 py-4 sticky top-0  border-b border-blue"
     >
       <div className="flex justify-between items-center gap-2 max-w-[95%] mx-auto">
         <input
@@ -100,17 +101,19 @@ const ImageIntegration = () => {
   };
 
   return (
-    <div className="flex relative flex-col justify-center">
-      <div className="flex justify-end">
+    <div className="relative overflow-auto ">
+      <div className="flex justify-end -mt-14">
         <SearchBar
           sendBackResults={sendBackResults}
           changeSending={changeSendingStatus}
         />
       </div>
       {sending && (
-        <p className="text-center mt-4">We are searching, please wait...</p>
+        <div className="flex justify-center">
+          <img src={Loader} alt="" className="w-10 h-10 rounded-full" />
+        </div>
       )}
-      <div className="pt-4 pb-20">
+      <div className="pt-4 pb-20 ">
         {/* Adjust padding to avoid overlap */}
         {images && <ImageList images={images} />}
       </div>

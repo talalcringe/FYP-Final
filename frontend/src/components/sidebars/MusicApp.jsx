@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Audio from "./Audio.jsx";
 
-function App() {
+function MusicApp() {
   const [showSettings, setShowSettings] = useState(true);
 
   const [showAudio, setShowAudio] = useState(false);
@@ -24,4 +24,4 @@ function App() {
   );
 }
 
-export default App;
+export default MusicApp;

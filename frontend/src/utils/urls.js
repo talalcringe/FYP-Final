@@ -26,6 +26,12 @@ export const searchMusic = (query) =>
 
 export const askTheBot = `${userRoutes}/askourbot`;
 
+export const getAllChats = `${userRoutes}/getAllChats`;
+
+export const fetchOneChat = (id) => `${userRoutes}/getOneChat/${id}`;
+
+export const startNewchat = (id) => `${userRoutes}/newChat/${id}`;
+
 export const headers = {
   Accept: "application/json",
   "Content-Type": "application/json",
