@@ -23,13 +23,13 @@ async function getModelResponse(prompt, history) {
   if (history) {
     pastHistory = history;
   }
-  console.log(pastHistory);
   const chatSession = model.startChat({
     generationConfig,
     history: pastHistory,
   });
 
   const result = await chatSession.sendMessage(prompt);
+
   const answer = result.response.text();
   return answer;
 }

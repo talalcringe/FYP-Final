@@ -14,6 +14,9 @@ const {
   getDefaultMusic,
   searchFreesoundAudio,
   askGemini,
+  getAllChats,
+  getOneChat,
+  initiateNewChat,
 } = require("../controllers/user-controller");
 
 // ---------- IMAGES RELATED STUFF----------------------------
@@ -54,4 +57,11 @@ router.get("/getDefaultMusic", getDefaultMusic);
 router.get("/searchMusicSound", searchFreesoundAudio);
 
 router.put("/askourbot", askGemini);
+
+router.get("/getAllChats", getAllChats);
+
+router.get("/getOneChat/:chatid", getOneChat);
+
+router.get("/newChat/:chatid", initiateNewChat);
+
 module.exports = router;
