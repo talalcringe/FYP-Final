@@ -57,12 +57,9 @@ const TipTap = ({
   const editor = useEditor({
     extensions: extensions,
     content: content,
-
     onUpdate: ({ editor }) => {
       localStorageService.setItem(pageId, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
-
-      handleOverflow();
     },
     onBlur: async ({ editor }) => {
       const content = localStorageService.getItem(pageId);
@@ -93,9 +90,7 @@ const TipTap = ({
     };
     if (editor && content && content !== '<p></p>') {
       editor.commands.setContent(content);
-      handleOverflow();
       getPrevWordCount();
-      editor.commands.focus('end');
     }
   }, [pageId, editor, content]);
 
@@ -134,71 +129,6 @@ const TipTap = ({
     },
   };
 
-  const handleOverflow = () => {
-    const editorElement = document.querySelector('.tiptap');
-    const contentHeight = editorElement ? editorElement.scrollHeight : 0;
-    const pageHeight = 690; // Fixed page height
-
-    if (contentHeight > pageHeight) {
-      // Identify the overflowing content
-      const range = document.createRange();
-      range.setStart(editorElement, 0);
-      range.setEnd(editorElement, editorElement.childNodes.length);
-
-      let overflowNodeIndex = null;
-      let overflowHeight = 0;
-      for (let i = 0; i < editorElement.childNodes.length; i++) {
-        const node = editorElement.childNodes[i];
-        const nodeHeight = node.scrollHeight || node.offsetHeight || 0;
-        overflowHeight += nodeHeight;
-        if (overflowHeight > pageHeight) {
-          overflowNodeIndex = i;
-          break;
-        }
-      }
-
-      if (overflowNodeIndex !== null) {
-        // Extract the overflowing content and create a new page with it
-        const overflowingContent = Array.from(editorElement.childNodes)
-          .slice(overflowNodeIndex)
-          .map((node) => node.outerHTML)
-          .join('');
-
-        const remainingContent = Array.from(editorElement.childNodes)
-          .slice(0, overflowNodeIndex)
-          .map((node) => node.outerHTML)
-          .join('');
-
-        editor.commands.setContent(remainingContent);
-
-        const saveDetails = async () => {
-          localStorageService.setItem(pageId, remainingContent);
-          await indexedDBService.updateItem(pageId, {
-            content: remainingContent,
-            words: wordCount,
-          });
-          localStorageService.deleteItem(pageId);
-        };
-        saveDetails();
-        setWordCount(getWordCount(remainingContent));
-
-        console.log(
-          'Overflowing content:',
-          overflowingContent,
-          'Remaining content:',
-          remainingContent
-        );
-
-        const nextPageId = getNextPage(pageId);
-        if (!nextPageId) {
-          createNewPage(overflowingContent);
-        } else {
-          selectPage(nextPageId, overflowingContent);
-        }
-      }
-    }
-  };
-
   return (
     <div className='flex flex-col justify-center items-center'>
       <div className='sticky top-5 z-10'>
@@ -232,7 +162,7 @@ const TipTap = ({
           showImage={false}
         />
       </div>
-      <div className='tiptap-container'>
+      <div>
         <EditorContent editor={editor} />
       </div>
       <FloatingMenu
