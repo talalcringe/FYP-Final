@@ -5,9 +5,7 @@ const { oAuth2Client } = require("../utils/oAuth.js");
 const Project = require("../models/Project");
 const User = require("../models/User");
 const { Readable } = require("stream");
-const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
-const User = require("../models/User");
 const { generateResponseWithPayload } = require("../utils/helpers.js");
 
 exports.handleFormSubmission = async (req, res, next) => {

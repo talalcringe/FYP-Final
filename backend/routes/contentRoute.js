@@ -5,7 +5,7 @@ const normalverify = require("../utils/normalguard");
 
 const {
   createPageFolder,
-  createTextFilesAndUpload,
+  createPageFilesAndUpload,
   ensureFoldersExist,
   handleFormSubmission,
   getAllProjects,
