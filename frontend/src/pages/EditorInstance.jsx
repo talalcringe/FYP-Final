@@ -164,7 +164,7 @@ const EditorInstance = ({ title, fonts }) => {
   };
 
   return (
-    <div className='relative flex justify-between w-screen h-full bg-black'>
+    <div className='relative flex justify-between w-screen h-full'>
       <div className='sticky top-5 h-full w-[15vw]'>
         <LeftSidebar
           pages={pages}
