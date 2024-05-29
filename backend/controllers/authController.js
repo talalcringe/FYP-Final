@@ -13,7 +13,7 @@ exports.getAuthUrl = async (req, res, next) => {
   try {
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
-      prompt: "consent",
+      // prompt: "consent",
       scope: SCOPE,
     });
     return res.send({

@@ -5,16 +5,27 @@ const normalverify = require("../utils/normalguard");
 
 const {
   createPageFolder,
-  createTextFilesAndUpload,
+  createPageFilesAndUpload,
+  ensureFoldersExist,
+  handleFormSubmission,
   getAllProjects,
   getSprintHistoryOfAProject,
   createSprint,
   modifySprintStatus,
 } = require("../controllers/contentController");
 
-router.get("/createPageFolder/:pagenumber", verify, createPageFolder);
+// router.get("/createPageFolder/:pagenumber", verify, createPageFolder);
 
-router.post("/createTextFilesAndUpload", verify, createTextFilesAndUpload);
+router.post(
+  "/createProject/:projectId",
+  verify,
+  ensureFoldersExist,
+  handleFormSubmission
+);
+
+// router.get("/createProjectFolder/:projectId", verify, ensureFoldersExist);
+
+router.post("/createPageFilesAndUpload", verify, createPageFilesAndUpload);
 
 router.get("/getAllProjects", verify, normalverify, getAllProjects);
 
