@@ -13,7 +13,7 @@ exports.getAuthUrl = async (req, res, next) => {
   try {
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
-      prompt: "consent",
+      // prompt: "consent",
       scope: SCOPE,
     });
     return res.send({
@@ -67,7 +67,7 @@ exports.getToken = async (req, res, next) => {
 
           // Set the JWT token as a cookie
           res.cookie("access_token", jwtToken);
-          const baseUrl = "http://localhost:5173/dashboard/editor"; // Default to local URL
+          const baseUrl = "http://localhost:5173/dashboard/"; // Default to local URL
           // const payload = {
           //   userInfo: user,
           //   redirectUrl: baseUrl,
@@ -97,7 +97,7 @@ exports.getToken = async (req, res, next) => {
 
           // Set the JWT token as a cookie
           res.cookie("access_token", jwtToken);
-          const baseUrl = "http://localhost:5173/dashboard/editor"; // Default to local URL
+          const baseUrl = "http://localhost:5173/dashboard/"; // Default to local URL
           // const payload = {
           //   userInfo: user,
           //   redirectUrl: baseUrl,

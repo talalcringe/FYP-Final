@@ -4,7 +4,8 @@ import { v4 } from "uuid";
 import TipTap from "../components/TipTap/TipTap";
 import LeftSidebar from "../components/Editor/LeftSidebar";
 import RightSidebar from "../components/Editor/RightSidebar";
-
+import axios from "axios";
+import { createProjectFolderAndGetIdUrl } from "../utils/urls";
 import indexedDBService from "../services/indexedDB";
 
 // let content = `
@@ -38,7 +39,8 @@ import indexedDBService from "../services/indexedDB";
 // </blockquote>
 // `;
 
-const EditorInstance = ({ title, fonts }) => {
+let projectFolderChecked = false;
+const EditorInstance = ({ title, fonts, projectId }) => {
   const [content, setContent] = useState("");
   const [pages, setPages] = useState([]);
   const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
@@ -56,6 +58,26 @@ const EditorInstance = ({ title, fonts }) => {
       }
     };
     fetchPages();
+    const checkProjectFolder = async () => {
+      try {
+        const response = await axios.get(
+          createProjectFolderAndGetIdUrl(projectId),
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (response.status === 200) {
+          console.log("Project folder created successfully");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (!projectFolderChecked) {
+      checkProjectFolder();
+    }
+    projectFolderChecked = true;
   }, []);
 
   useEffect(() => {
@@ -179,6 +201,7 @@ const EditorInstance = ({ title, fonts }) => {
             key={selectedPageId}
             pageId={selectedPageId}
             totalWordCount={totalWordCount}
+            projectId={projectId}
             deletePage={deletePage}
             content={content}
             fonts={fonts}

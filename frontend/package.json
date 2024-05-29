@@ -27,6 +27,7 @@
     "@tiptap/pm": "^2.4.0",
     "@tiptap/react": "^2.4.0",
     "@tiptap/starter-kit": "^2.4.0",
+    "axios": "^1.7.2",
     "chart.js": "^4.4.3",
     "d3-scale-chromatic": "^3.1.0",
     "firebase": "^10.12.1",

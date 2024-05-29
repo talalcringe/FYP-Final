@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import EditorInstance from "./EditorInstance";
+import { useParams } from "react-router-dom";
 
 function Editor() {
   const [fonts, setFonts] = useState([]);
+  const { projectId } = useParams();
+  // console.log(projectId);
 
   useEffect(() => {
     const fontList = [
@@ -144,7 +147,7 @@ function Editor() {
 
   return (
     <div className="min-h-[87vh] mt-[90px] bg-alabaster overflow-x-clip">
-      <EditorInstance title={"Hehe Boii"} fonts={fonts} />
+      <EditorInstance title={"Hehe Boii"} fonts={fonts} projectId={projectId} />
     </div>
   );
 }

@@ -27,6 +27,8 @@ import FontSize from "./customExtensions/FontSize";
 import localStorageService from "../../services/localStorage";
 import indexedDBService from "../../services/indexedDB";
 import { getWordCount } from "../../services/utils";
+import axios from "axios";
+import { sendFilesUrl } from "../../utils/urls";
 
 const extensions = [
   StarterKit,
@@ -41,8 +43,10 @@ const extensions = [
   FontFamily.configure({ types: ["textStyle"] }),
 ];
 
+
 const TipTap = ({
   pageId,
+  projectId,
   title,
   totalWordCount,
   content,
@@ -80,7 +84,8 @@ const TipTap = ({
         });
       }
     },
-  });
+    autofocus: "end",
+  }); 
 
   useEffect(() => {
     const getPrevWordCount = async () => {
@@ -91,6 +96,20 @@ const TipTap = ({
     if (editor && content && content !== "<p></p>") {
       editor.commands.setContent(content);
       getPrevWordCount();
+      const payload = {
+        pageId: pageId,
+        data: { projectId: projectId, content: content, words: wordCount },
+      };
+      axios
+        .post(sendFilesUrl, payload, {
+          withCredentials: true,
+        })
+        .then((response) => {
+          console.log("response:", response);
+        })
+        .catch((error) => {
+          console.log("error:", error);
+        });
     }
   }, [pageId, editor, content]);
 

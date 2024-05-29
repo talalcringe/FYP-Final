@@ -21,7 +21,7 @@ function App() {
             element={<Exporting page='create' />}
           />
           <Route path='export' element={<Exporting page='export' />} />
-          <Route path='editor' element={<Editor />} />
+          <Route path='editor/:projectId' element={<Editor />} />
           <Route path='sprint-history' element={<SprintHistory />} />
         </Route>
       </Routes>
