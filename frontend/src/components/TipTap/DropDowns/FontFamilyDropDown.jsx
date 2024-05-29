@@ -28,6 +28,12 @@ const FontFamilyDropDown = ({ editor, fonts }) => {
     setShowOptions(false);
   };
 
+  const handleRemoveAllNodes = () => {
+    editor.chain().focus().clearNodes().run();
+    setFamily('sans serif');
+    setShowOptions(false);
+  };
+
   const toggleOff = () => {
     interval.current = setInterval(() => {
       setShowOptions(false);
@@ -45,7 +51,7 @@ const FontFamilyDropDown = ({ editor, fonts }) => {
         onMouseEnter={toggleOn}
         onMouseLeave={toggleOff}
         onClick={toggleOn}
-        className='flex items-center justify-center text-sm font-bold text-ghostWhite bg-cerulean py-1 px-2 m-1 transition hover:scale-105 rounded'
+        className='flex items-center justify-center text-xs font-bold text-ghostWhite bg-cerulean py-1 px-2 m-1 transition hover:scale-105 rounded'
         title={'Font Family'}
       >
         {family}
@@ -56,7 +62,7 @@ const FontFamilyDropDown = ({ editor, fonts }) => {
           onMouseEnter={toggleOn}
           onMouseLeave={toggleOff}
         >
-          <div className='overflow-x-hidden overflow-y-auto h-full w-full '>
+          <div className='overflow-x-hidden overflow-y-auto h-full w-full'>
             {fonts.map((font) => (
               <Button
                 key={font}
@@ -66,6 +72,14 @@ const FontFamilyDropDown = ({ editor, fonts }) => {
                 infoText={`Set font family to ${font}`}
               />
             ))}
+            <Button
+              text='Remove All Nodes'
+              onClick={handleRemoveAllNodes}
+              defClass={
+                'text-xs w-[90%] mx-2 mt-2 bg-red-500 text-white rounded'
+              }
+              infoText='Remove all nodes'
+            />
           </div>
         </div>
       )}

@@ -7,48 +7,17 @@ import RightSidebar from '../components/Editor/RightSidebar';
 
 import indexedDBService from '../services/indexedDB';
 
-// let content = `
-// <h2>
-//   Hi there,
-// </h2>
-// <p>
-//   this is a <em>basic</em> example of <strong>tiptap</strong>. Sure, there are all kind of basic text styles you’d probably expect from a text editor. But wait until you see the lists:
-// </p>
-// <ul>
-//   <li>
-//     That’s a bullet list with one …
-//   </li>
-//   <li>
-//     … or two list items.
-//   </li>
-// </ul>
-// <p>
-//   Isn’t that great? And all of that is editable. But wait, there’s more. Let’s try a code block:
-// </p>
-// <pre><code class="language-css">body {
-// display: none;
-// }</code></pre>
-// <p>
-//   I know, I know, this is impressive. It’s only the tip of the iceberg though. Give it a try and click a little bit around. Don’t forget to check the other examples too.
-// </p>
-// <blockquote>
-//   Wow, that’s amazing. Good work, boy! 👏
-//   <br />
-//   — Mom
-// </blockquote>
-// `;
-
 const EditorInstance = ({ title, fonts }) => {
   const [content, setContent] = useState('');
   const [pages, setPages] = useState([]);
-  const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
+  const [selectedPageId, setSelectedPageId] = useState(null); // Default to null initially
+  const [totalWordCount, setTotalWordCount] = useState(0);
 
   useEffect(() => {
     const fetchPages = async () => {
       const savedPages = await indexedDBService.getItem('pages');
-      // console.log('savedPages', savedPages);
 
-      if (savedPages === null || savedPages.length === 0) {
+      if (!savedPages || savedPages.length === 0) {
         newPage();
       } else {
         setPages(savedPages);
@@ -59,28 +28,53 @@ const EditorInstance = ({ title, fonts }) => {
   }, []);
 
   useEffect(() => {
-    const fetchContent = async () => {
-      const savedPage = await indexedDBService.getItem(selectedPageId);
-      console.log(
-        '5555555555555555555555555555555555555555555555savedPages: ',
-        pages,
-        'selectedPageId: ',
-        selectedPageId,
-        'savedPage: ',
-        savedPage
+    const fetchCurrPageData = async () => {
+      if (selectedPageId) {
+        const savedPage = await indexedDBService.getItem(selectedPageId);
+        const savedContent = savedPage ? savedPage.content : ' ';
+        const savedWords = savedPage ? savedPage.words : ' ';
+        return { savedWords, savedContent };
+      }
+      return { savedWords: 0, savedContent: '' };
+    };
+
+    const calculateAndPrintTotalWordCount = async (pages) => {
+      // Fetch the current page data
+      const { savedWords, savedContent } = await fetchCurrPageData();
+
+      // Use map to create an array of promises to fetch word counts
+      const wordPromises = pages.map(async (pageId) => {
+        const savedPage = await indexedDBService.getItem(pageId);
+        return savedPage ? savedPage.words : 0; // Assuming words is a number
+      });
+
+      // Use Promise.all to wait for all promises to resolve
+      const wordsArray = await Promise.all(wordPromises);
+
+      // Calculate the total word count
+      const totalWordCount = wordsArray.reduce(
+        (acc, words) => acc + parseInt(words, 10),
+        0
       );
-      const savedContent = savedPage ? savedPage.content : ' ';
+
+      // Subtract savedWords
+      const result =
+        totalWordCount - parseInt(savedWords, 10) || totalWordCount;
+
+      // Print the result
+      console.log('Total Word Count after subtracting savedWords:', result);
+
+      setTotalWordCount(result);
+      // Fetch current page data and set content
       setContent(savedContent);
     };
 
-    fetchContent();
+    if (selectedPageId) {
+      calculateAndPrintTotalWordCount(pages);
+    }
   }, [selectedPageId]);
 
-  useEffect(() => {
-    console.log('contentAfterIdChange', content);
-  }, [content]);
-
-  const newPage = async () => {
+  const newPage = async (content = '') => {
     const newPageId = v4();
     const currentIndex = pages.indexOf(selectedPageId);
     const newPages = [
@@ -88,31 +82,51 @@ const EditorInstance = ({ title, fonts }) => {
       newPageId,
       ...pages.slice(currentIndex + 1),
     ];
-    setPages(newPages); // Update the pages state
+
+    // Update the pages in state and database
+    setPages(newPages);
     await indexedDBService.setItem('pages', newPages);
-    setSelectedPageId(newPageId); // Select the new page
-    // setContent('');
+
+    // Set the content for the new page if provided
+    if (content) {
+      await indexedDBService.setItem(newPageId, {
+        content: content,
+        words: content.split(' ').length,
+      });
+    }
+
+    console('selectedBefore', selectedPageId);
+    // Set the selected page ID after the pages state is updated
+    setSelectedPageId(newPageId);
+    console('selectedAfter', selectedPageId);
   };
 
-  // Function to handle page selection
-  const selectPage = (pageId) => {
-    // console.log('Selecting page', pageId);
+  const createNewPage = (content = '') => {
+    newPage(content);
+  };
+
+  const selectPage = async (pageId, content = '') => {
+    if (content) {
+      const currentPage = await indexedDBService.getItem(pageId);
+      const updatedContent =
+        content + ' ' + (currentPage ? currentPage.content : '');
+      await indexedDBService.setItem(pageId, {
+        content: updatedContent,
+        words: updatedContent.split(' ').length,
+      });
+    }
     setSelectedPageId(pageId);
   };
 
-  // Function to handle page deletion
   const deletePage = async () => {
     const selectNextPage = () => {
       const index = pages.indexOf(selectedPageId);
-      // console.log('Pages before deletion', pages);
       if (pages.length === 1) {
-        console.log('here');
         old = false;
       } else if (index === pages.length - 1) {
         setSelectedPageId(pages[index - 1]);
       } else {
         setSelectedPageId(pages[index + 1]);
-        // console.log(selectedPageId);
       }
     };
 
@@ -125,20 +139,22 @@ const EditorInstance = ({ title, fonts }) => {
     selectNextPage();
     setPages(newPages);
     if (!old) {
-      console.log('PAGESBEFORE: ', pages);
       const newPageId = v4();
       const newPages = [newPageId];
-      setPages(newPages); // Update the pages state
+      setPages(newPages);
       await indexedDBService.setItem('pages', newPages);
-      setSelectedPageId(newPageId); // Select the new page
-      console.log('PAGESAFTER: ', pages, newPageId);
+      setSelectedPageId(newPageId);
     }
   };
 
+  const getNextPage = (currentPageId) => {
+    if (currentPageId === pages[pages.length - 1]) return false;
+    else return pages[pages.indexOf(currentPageId) + 1];
+  };
+
   return (
-    <div className='flex h-full'>
-      {/* Sidebar for selecting pages */}
-      <div className='flex items-end h-full w-[15vw]'>
+    <div className='relative flex justify-between w-screen h-full'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <LeftSidebar
           pages={pages}
           selectedPageId={selectedPageId}
@@ -146,23 +162,23 @@ const EditorInstance = ({ title, fonts }) => {
           newPage={newPage}
         />
       </div>
-
-      {/* Main area for displaying the selected page */}
-      <div className='p-4 w-[75vw] h-full'>
+      <div className='p-4 w-[40vw] h-full'>
         {selectedPageId && content && (
           <TipTap
             key={selectedPageId}
-            id={selectedPageId}
+            pageId={selectedPageId}
+            totalWordCount={totalWordCount}
             deletePage={deletePage}
             content={content}
             fonts={fonts}
             title={title}
+            createNewPage={createNewPage}
+            getNextPage={getNextPage}
+            selectPage={selectPage}
           />
         )}
       </div>
-
-      {/* Sidebar for selecting modals */}
-      <div className='flex align-self-end justify-self-end h-full w-[15vw]'>
+      <div className='sticky top-5 h-full w-[15vw]'>
         <RightSidebar />
       </div>
     </div>

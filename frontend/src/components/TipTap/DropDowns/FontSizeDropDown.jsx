@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Button from '../../Editor/Button';
-import FontSize from '../customExtensions/FontSize';
 
 const FontSizeDropDown = ({ editor }) => {
   const [size, setSize] = useState('16px');
@@ -50,7 +49,7 @@ const FontSizeDropDown = ({ editor }) => {
   const toggleOff = () => {
     interval.current = setInterval(() => {
       setShowOptions(false);
-    }, 1000);
+    }, 600);
   };
 
   const toggleOn = () => {
@@ -64,7 +63,7 @@ const FontSizeDropDown = ({ editor }) => {
         onMouseEnter={toggleOn}
         onMouseLeave={toggleOff}
         onClick={toggleOn}
-        className='flex items-center justify-center text-sm font-bold text-ghostWhite bg-cerulean py-1 px-2 m-1 transition hover:scale-105 rounded'
+        className='flex items-center justify-center text-xs font-bold text-ghostWhite bg-cerulean py-1 px-2 m-1 transition hover:scale-105 rounded'
         title={'Font Size'}
       >
         {size}
@@ -80,7 +79,7 @@ const FontSizeDropDown = ({ editor }) => {
               key={size}
               text={size}
               onClick={() => handleFontSizeChange(size)}
-              defClass={'text-sm w-[75%]'}
+              defClass={'text-xs w-[75%]'}
               infoText={`Set font size to ${size}`}
             />
           ))}

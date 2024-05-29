@@ -41,53 +41,63 @@ const extensions = [
   FontFamily.configure({ types: ['textStyle'] }),
 ];
 
-const chapter = '1';
-
-const TipTap = ({ id, title, content, deletePage, fonts }) => {
-  // console.log('TipTap rendered with id', id, 'content: ', content);
+const TipTap = ({
+  pageId,
+  title,
+  totalWordCount,
+  content,
+  deletePage,
+  fonts,
+  createNewPage,
+  getNextPage,
+  selectPage,
+}) => {
   const [wordCount, setWordCount] = useState(0);
 
   const editor = useEditor({
     extensions: extensions,
     content: content,
+
     onUpdate: ({ editor }) => {
-      localStorageService.setItem(id, editor.getHTML());
+      localStorageService.setItem(pageId, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
-      console.log('wordCount: ', wordCount);
-      console.log('content', content);
-    },
 
+      handleOverflow();
+    },
     onBlur: async ({ editor }) => {
-      const content = localStorageService.getItem(id);
+      const content = localStorageService.getItem(pageId);
       if (editor && editor.isEditable && content) {
-        await indexedDBService.updateItem(id, {
+        await indexedDBService.updateItem(pageId, {
           content: content,
           words: wordCount,
         });
-      } else {
-        // console.log('Editor was infact not editable at this point');
+        localStorageService.deleteItem(pageId);
       }
     },
-
     onDestroy: async () => {
-      const content = localStorageService.getItem(id);
+      const content = localStorageService.getItem(pageId);
       if (content) {
-        await indexedDBService.updateItem(id, {
+        await indexedDBService.updateItem(pageId, {
           content: content,
           words: wordCount,
         });
-      } else {
-        // console.log('Editor was infact not editable at this point');
       }
     },
-    autofocus: 'end',
   });
 
   useEffect(() => {
+    const getPrevWordCount = async () => {
+      const pageJSON = await indexedDBService.getItem(pageId);
+      const prevWordCount = pageJSON ? pageJSON.words : 0;
+      setWordCount(prevWordCount);
+    };
     if (editor && content && content !== '<p></p>') {
       editor.commands.setContent(content);
+      handleOverflow();
+      getPrevWordCount();
+      editor.commands.focus('end');
     }
-  }, [id, editor]);
+  }, [pageId, editor, content]);
 
   const styles = {
     top: {
@@ -124,33 +134,107 @@ const TipTap = ({ id, title, content, deletePage, fonts }) => {
     },
   };
 
+  const handleOverflow = () => {
+    const editorElement = document.querySelector('.tiptap');
+    const contentHeight = editorElement ? editorElement.scrollHeight : 0;
+    const pageHeight = 690; // Fixed page height
+
+    if (contentHeight > pageHeight) {
+      // Identify the overflowing content
+      const range = document.createRange();
+      range.setStart(editorElement, 0);
+      range.setEnd(editorElement, editorElement.childNodes.length);
+
+      let overflowNodeIndex = null;
+      let overflowHeight = 0;
+      for (let i = 0; i < editorElement.childNodes.length; i++) {
+        const node = editorElement.childNodes[i];
+        const nodeHeight = node.scrollHeight || node.offsetHeight || 0;
+        overflowHeight += nodeHeight;
+        if (overflowHeight > pageHeight) {
+          overflowNodeIndex = i;
+          break;
+        }
+      }
+
+      if (overflowNodeIndex !== null) {
+        // Extract the overflowing content and create a new page with it
+        const overflowingContent = Array.from(editorElement.childNodes)
+          .slice(overflowNodeIndex)
+          .map((node) => node.outerHTML)
+          .join('');
+
+        const remainingContent = Array.from(editorElement.childNodes)
+          .slice(0, overflowNodeIndex)
+          .map((node) => node.outerHTML)
+          .join('');
+
+        editor.commands.setContent(remainingContent);
+
+        const saveDetails = async () => {
+          localStorageService.setItem(pageId, remainingContent);
+          await indexedDBService.updateItem(pageId, {
+            content: remainingContent,
+            words: wordCount,
+          });
+          localStorageService.deleteItem(pageId);
+        };
+        saveDetails();
+        setWordCount(getWordCount(remainingContent));
+
+        console.log(
+          'Overflowing content:',
+          overflowingContent,
+          'Remaining content:',
+          remainingContent
+        );
+
+        const nextPageId = getNextPage(pageId);
+        if (!nextPageId) {
+          createNewPage(overflowingContent);
+        } else {
+          selectPage(nextPageId, overflowingContent);
+        }
+      }
+    }
+  };
+
   return (
-    <div className='m-0 px-10 h-[50vh] flex-col justify-center items-center'>
-      <TitleBar title={title} wordCount={wordCount} deletePage={deletePage} />
-      <MenuBar
-        editor={editor}
-        style={styles.top.style}
-        blockLabels={styles.top.blockLabels}
-        showDividers={true}
-        fonts={fonts}
-        showBasicStyles={true}
-        showCode={true}
-        showAlignment={true}
-        showParagraph={true}
-        showHeadings={true}
-        showUl={true}
-        showOl={true}
-        showCodeBlock={true}
-        showQuote={true}
-        showHR={true}
-        showTextWrap={true}
-        showLink={true}
-        showExtraOptions={true}
-        showRemoveFormating={true}
-        showUndoRedo={true}
-        showImage={false}
-      />
-      <EditorContent editor={editor} />
+    <div className='flex flex-col justify-center items-center'>
+      <div className='sticky top-5 z-10'>
+        <TitleBar
+          title={title}
+          wordCount={wordCount}
+          totalWordCount={totalWordCount}
+          deletePage={deletePage}
+        />
+        <MenuBar
+          editor={editor}
+          style={styles.top.style}
+          blockLabels={styles.top.blockLabels}
+          showDividers={true}
+          fonts={fonts}
+          showBasicStyles={true}
+          showCode={true}
+          showAlignment={true}
+          showParagraph={true}
+          showHeadings={true}
+          showUl={true}
+          showOl={true}
+          showCodeBlock={true}
+          showQuote={true}
+          showHR={true}
+          showTextWrap={true}
+          showLink={true}
+          showExtraOptions={true}
+          showRemoveFormating={true}
+          showUndoRedo={true}
+          showImage={false}
+        />
+      </div>
+      <div className='tiptap-container'>
+        <EditorContent editor={editor} />
+      </div>
       <FloatingMenu
         editor={editor}
         tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
@@ -162,7 +246,10 @@ const TipTap = ({ id, title, content, deletePage, fonts }) => {
           fonts={fonts}
         />
       </FloatingMenu>
-      <BubbleMenu editor={editor}>
+      <BubbleMenu
+        editor={editor}
+        tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
+      >
         <Bubble
           editor={editor}
           style={styles.bubble.style}
