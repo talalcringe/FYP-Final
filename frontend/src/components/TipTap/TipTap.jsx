@@ -95,6 +95,7 @@ const TipTap = ({
     };
     if (editor && content && content !== "<p></p>") {
       editor.commands.setContent(content);
+      console.log("A", content);
       getPrevWordCount();
       const payload = {
         pageId: pageId,
@@ -150,7 +151,7 @@ const TipTap = ({
 
   return (
     <div className="flex flex-col justify-center items-center">
-      <div className="sticky top-5 z-1">
+      <div className="sticky top-5 z-[1]">
         <TitleBar
           title={title}
           wordCount={wordCount}
@@ -181,7 +182,7 @@ const TipTap = ({
           showImage={false}
         />
       </div>
-      <div>
+      <div className="z-[0]">
         <EditorContent editor={editor} />
       </div>
       <FloatingMenu

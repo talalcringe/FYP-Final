@@ -39,6 +39,11 @@ const projectSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    status: {
+      type: String,
+      enum: ["active", "onhold", "completed", "cancelled"],
+      default: "active",
+    },
     sprints: {
       type: [String],
       default: [],

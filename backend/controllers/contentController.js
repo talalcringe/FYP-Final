@@ -436,7 +436,8 @@ function textToStream(text) {
 
 exports.createSprint = async () => {
   try {
-    const { projectid, targetTime, numberOfWords } = req.body;
+    const { projectid, sprintTitle, targetTime, numberOfWords, date } =
+      req.body;
 
     const project = await Project.findById(projectid);
 
@@ -444,12 +445,11 @@ exports.createSprint = async () => {
       throw new CustomError(404, "No Sprint found");
     }
 
-    const date = new Date().toDateString();
-
     const sprint = await Sprint.create({
       numberOfWords,
       date,
       targetTime,
+      sprintTitle,
     });
 
     project.sprints.push(sprint._id);

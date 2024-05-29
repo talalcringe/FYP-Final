@@ -9,6 +9,10 @@ import MusicIcon from "../../assets/music.png";
 import ChatIcon from "../../assets/chat.png";
 import ImageIntegration from "../sidebars/ImageIntergration";
 import MusicApp from "../sidebars/MusicApp";
+import SprintIcon from "../../assets/sprint.png";
+import CreateSprint from "../pop-ups/CreateSprint";
+import Overlay from "../overlays/Overlay";
+import WiderOverlay from "../overlays/WiderOverlay";
 
 const IconButton = ({ image, onClick }) => {
   return (
@@ -23,6 +27,7 @@ const RightSidebar = ({}) => {
   const [chatmodalsidebar, SetChatBotSideBar] = useState(false);
   const [imagessidebar, setImagesSidebar] = useState(false);
   const [musicsidebar, setMusicSideBar] = useState(false);
+  const [sprintsidebar, setSprintSideBar] = useState(false);
   const [more, setMore] = useState(false);
 
   const openChatBotSideBar = () => {
@@ -42,12 +47,19 @@ const RightSidebar = ({}) => {
   };
 
   const openMusicSideBar = () => {
-    console.log("RAM");
     setMusicSideBar(true);
   };
 
   const closeMusicSideBar = () => {
     setMusicSideBar(false);
+  };
+
+  const openSprintSideBar = () => {
+    setSprintSideBar(true);
+  };
+
+  const closeSprintSideBar = () => {
+    setSprintSideBar(false);
   };
 
   return (
@@ -68,16 +80,22 @@ const RightSidebar = ({}) => {
         <IconButton image={ChatIcon} onClick={openChatBotSideBar} />
         <IconButton image={MusicIcon} onClick={openMusicSideBar} />
         <IconButton image={ImagesIcon} onClick={openImagesSideBar} />
+        <IconButton image={SprintIcon} onClick={openSprintSideBar} />
 
         {imagessidebar && (
-          <SideBar status={imagessidebar} onClose={closeImagesSideBar}>
+          <WiderOverlay onClose={closeImagesSideBar}>
             <ImageIntegration onClose={closeImagesSideBar} />
-          </SideBar>
+          </WiderOverlay>
         )}
         {musicsidebar && (
-          <SideBar status={musicsidebar} onClose={closeMusicSideBar}>
+          <Overlay status={musicsidebar} onClose={closeMusicSideBar}>
             <MusicApp onClose={closeMusicSideBar} />
-          </SideBar>
+          </Overlay>
+        )}
+        {sprintsidebar && (
+          <Overlay onClose={closeSprintSideBar}>
+            <CreateSprint onClose={closeSprintSideBar} />
+          </Overlay>
         )}
       </div>
     </div>

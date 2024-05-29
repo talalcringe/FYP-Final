@@ -212,7 +212,7 @@ const EditorInstance = ({ title, fonts, projectId }) => {
           />
         )}
       </div>
-      <div className="sticky top-0 h-full w-[15vw]">
+      <div className="sticky top-0 h-full w-[15vw] z-[2]">
         <RightSidebar />
       </div>
     </div>
