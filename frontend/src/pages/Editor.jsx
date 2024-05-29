@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 function Editor() {
   const [fonts, setFonts] = useState([]);
   const { projectId } = useParams();
-  console.log(projectId);
+  // console.log(projectId);
 
   useEffect(() => {
     const fontList = [

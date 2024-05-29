@@ -156,7 +156,7 @@ exports.createPageFilesAndUpload = async (req, res, next) => {
     // }
 
     // Upload the text file to Google Drive
-    await uploadJsonFileToDrive(fileName, projectId, token, payload);
+    await uploadPageFileToDrive(fileName, projectId, token, payload);
 
     return res.status(200).json({
       success: true,
@@ -229,7 +229,7 @@ exports.ensureFoldersExist = async (req, res, next) => {
 
 //Helpers--------------------------------------------------------------
 
-async function uploadJsonFileToDrive(fileName, projectId, token, payload) {
+async function uploadPageFileToDrive(fileName, projectId, token, payload) {
   oAuth2Client.setCredentials(token);
   // console.log(token);
 
