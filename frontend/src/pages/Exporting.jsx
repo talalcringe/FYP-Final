@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { createProject, headers } from "../utils/urls";
 import { v4 as uuidv4 } from "uuid";
 import indexedDBService from "../services/indexedDB";
-import axios from "axios"; // Ensure axios is installed
+import { errorToast, successToast } from "../utils/notifications";
+import { Toaster } from "react-hot-toast";
+import Loader from "../assets/loader.gif";
 
 const Exporting = ({ page }) => {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ const Exporting = ({ page }) => {
     genre: "",
     image: null,
   });
+
+  const [creating, setCreating] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -40,6 +44,7 @@ const Exporting = ({ page }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setCreating(true);
     const data = { ...formData, projectId };
 
     if (formData.image) {
@@ -53,14 +58,28 @@ const Exporting = ({ page }) => {
         await indexedDBService.updateItem(projectId, data);
       }
 
-      const response = await axios.post(createProject(projectId), data, {
-        headers: headers,
-        withCredentials: true,
+      let response = await fetch(createProject(projectId), {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify(data),
       });
-      console.log("Response:", response.data);
-      navigate(`/dashboard/editor/${projectId}`);
+
+      response = await response.json();
+
+      if (response.success) {
+        successToast(response.message || "Project Created Successfully");
+        setTimeout(() => {
+          navigate(`/dashboard/editor/${projectId}`);
+        }, 1000);
+      } else {
+        throw new Error(response.message || "Failed to create project");
+      }
     } catch (error) {
+      errorToast(error.message);
       console.error("Error submitting form:", error);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -76,58 +95,29 @@ const Exporting = ({ page }) => {
       <form onSubmit={handleSubmit}>
         <div className="flex justify-between gap-5">
           <div className="left w-1/2">
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="title" className="text-blue w-[100px]">
-                Title
-              </label>
-              <input
-                type="text"
-                name="title"
-                id="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="p-2 w-[calc(100%-100px)] bg-yogurt border border-blue"
-              />
-            </div>
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="authors" className="text-blue w-[100px]">
-                Authors(s)
-              </label>
-              <input
-                type="text"
-                name="authors"
-                id="authors"
-                value={formData.authors}
-                onChange={handleChange}
-                className="p-2 w-[calc(100%-100px)] bg-yogurt border border-blue"
-              />
-            </div>
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="subtitle" className="text-blue w-[100px]">
-                Subtitle
-              </label>
-              <input
-                type="text"
-                name="subtitle"
-                id="subtitle"
-                value={formData.subtitle}
-                onChange={handleChange}
-                className="p-2 w-[calc(100%-100px)] bg-yogurt border border-blue"
-              />
-            </div>
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="seriesInfo" className="text-blue w-[100px]">
-                Series Info
-              </label>
-              <input
-                type="text"
-                name="seriesInfo"
-                id="seriesInfo"
-                value={formData.seriesInfo}
-                onChange={handleChange}
-                className="p-2 w-[calc(100%-100px)] bg-yogurt border border-blue"
-              />
-            </div>
+            {["title", "authors", "subtitle", "seriesInfo", "genre"].map(
+              (field) => (
+                <div
+                  className="flex justify-between items-center mb-2"
+                  key={field}
+                >
+                  <label
+                    htmlFor={field}
+                    className="text-blue w-[100px] capitalize"
+                  >
+                    {field}
+                  </label>
+                  <input
+                    type="text"
+                    name={field}
+                    id={field}
+                    value={formData[field]}
+                    onChange={handleChange}
+                    className="p-2 w-[calc(100%-100px)] bg-yogurt border border-blue"
+                  />
+                </div>
+              )
+            )}
             <div className="flex justify-between items-center mb-2">
               <label htmlFor="description" className="text-blue w-[100px]">
                 Description
@@ -140,23 +130,23 @@ const Exporting = ({ page }) => {
                 className="p-2 w-[calc(100%-100px)] h-40 bg-yogurt border border-blue"
               ></textarea>
             </div>
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="genre" className="text-blue w-[100px]">
-                Genre
-              </label>
-              <input
-                type="text"
-                name="genre"
-                id="genre"
-                value={formData.genre}
-                onChange={handleChange}
-                className="p-2 w-[calc(100%-100px)] bg-yogurt border border-blue"
-              />
-            </div>
             <div className="controls flex justify-between items-center gap-3 mt-5">
               <div className="flex justify-between items-center gap-5 w-1/2">
                 {page === "create" ? (
-                  <Buttons type="green" text="Create Project" />
+                  creating ? (
+                    <div>
+                      <button className="bg-white border border-blue px-6 py-2 rounded-lg flex justify-center items-center gap-2">
+                        <img
+                          src={Loader}
+                          className="w-5 h-5"
+                          alt="Loading..."
+                        />
+                        <span>Creating...</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <Buttons type="green" text="Create Project" />
+                  )
                 ) : (
                   <>
                     <Buttons type="green" text="Export PDF" />
@@ -184,6 +174,7 @@ const Exporting = ({ page }) => {
           </div>
         </div>
       </form>
+      <Toaster />
     </div>
   );
 };

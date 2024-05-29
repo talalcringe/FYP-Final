@@ -25,23 +25,17 @@ exports.handleFormSubmission = async (req, res, next) => {
 
     // Validate input data if necessary
     if (!title || !authors) {
+      console.log("ENTERED HERE");
       throw new CustomError(400, "Required fields are missing");
     }
 
-    // Handle the uploaded file
-    // if (!image) {
-    //   return res.status(400).json({ error: "Image upload failed" });
-    // }
-
-    // Save the data to the database or perform other actions
-    // For now, just return a success response
     const user = await User.findById(userId);
 
     if (!user) {
       throw new CustomError(404, "User not found");
     }
 
-    const project = await Project.create({
+    await Project.create({
       title,
       authors,
       subtitle,
@@ -55,19 +49,23 @@ exports.handleFormSubmission = async (req, res, next) => {
     user.projects.push(projectId);
     await user.save();
 
-    res.status(200).json({
-      message: "Project created successfully",
-      data: {
-        projectId,
-        title,
-        authors,
-        subtitle,
-        seriesInfo,
-        description,
-        genre,
-        image,
-      },
-    });
+    const data = {
+      projectId,
+      title,
+      authors,
+      subtitle,
+      seriesInfo,
+      description,
+      genre,
+      image,
+    };
+    const response = generateResponseWithPayload(
+      200,
+      true,
+      "Project Created Successfully",
+      data
+    );
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
