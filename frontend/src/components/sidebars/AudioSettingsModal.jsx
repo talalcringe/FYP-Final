@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AudioButton } from "./MusicIcons";
 import { getDefaultMusicUrl, searchMusic, headers } from "../../utils/urls";
+import Loader from "../../assets/loader.gif";
 
 const AudioSettingsModal = ({ onSelectAudio }) => {
   const [showModal, setShowModal] = useState(false);
@@ -144,7 +145,7 @@ const AudioSettingsModal = ({ onSelectAudio }) => {
           {/* Audio selection and load more results */}
           <div className="audio-selection flex justify-between gap-2 flex-wrap px-4 mt-3">
             {freesoundResults.map((audioInfo, index) => (
-              <div key={audioInfo.name} className="w-[45%]">
+              <div key={index} className="w-[45%]">
                 <button
                   onClick={() => handleAudioSelection(audioInfo)}
                   className={`button ${
@@ -165,6 +166,11 @@ const AudioSettingsModal = ({ onSelectAudio }) => {
                 </div>
               </div>
             ))}
+            {searching && (
+              <div className="flex justify-center mt-2">
+                <img src={Loader} alt="" className="w-10 h-10 rounded-full" />
+              </div>
+            )}
             {/* <button
               onClick={loadMoreResults}
               style={{
@@ -186,7 +192,9 @@ const AudioSettingsModal = ({ onSelectAudio }) => {
           <div>
             {fetching ? (
               <>
-                <p className="my-2 text-gray-600">Fetching default audio...</p>
+                <div className="flex justify-center mt-5">
+                  <img src={Loader} alt="" className="w-10 h-10 rounded-full" />
+                </div>
               </>
             ) : (
               <>

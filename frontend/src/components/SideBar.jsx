@@ -4,7 +4,7 @@ import CloseIcon from "../utils/CloseIcon";
 const SideBar = ({ status, onClose, children, more }) => {
   return (
     <div
-      className={`fixed  top-24 right-0 h-[85%] overflow-scroll rounded-tl-lg rounded-bl-lg bg-yogurt z-50 delay-100 transition-transform ${
+      className={`fixed  top-24 shadow-xl right-0 h-[85%] overflow-scroll rounded-tl-lg rounded-bl-lg bg-yogurt z-50 delay-100 transition-transform ${
         more ? "w-1/2" : "w-1/3"
       } border-2 border-blue ${
         status
