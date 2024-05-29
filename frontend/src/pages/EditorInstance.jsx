@@ -7,48 +7,17 @@ import RightSidebar from '../components/Editor/RightSidebar';
 
 import indexedDBService from '../services/indexedDB';
 
-// let content = `
-// <h2>
-//   Hi there,
-// </h2>
-// <p>
-//   this is a <em>basic</em> example of <strong>tiptap</strong>. Sure, there are all kind of basic text styles you’d probably expect from a text editor. But wait until you see the lists:
-// </p>
-// <ul>
-//   <li>
-//     That’s a bullet list with one …
-//   </li>
-//   <li>
-//     … or two list items.
-//   </li>
-// </ul>
-// <p>
-//   Isn’t that great? And all of that is editable. But wait, there’s more. Let’s try a code block:
-// </p>
-// <pre><code class="language-css">body {
-// display: none;
-// }</code></pre>
-// <p>
-//   I know, I know, this is impressive. It’s only the tip of the iceberg though. Give it a try and click a little bit around. Don’t forget to check the other examples too.
-// </p>
-// <blockquote>
-//   Wow, that’s amazing. Good work, boy! 👏
-//   <br />
-//   — Mom
-// </blockquote>
-// `;
-
 const EditorInstance = ({ title, fonts }) => {
   const [content, setContent] = useState('');
   const [pages, setPages] = useState([]);
-  const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
+  const [selectedPageId, setSelectedPageId] = useState(null); // Default to null initially
   const [totalWordCount, setTotalWordCount] = useState(0);
 
   useEffect(() => {
     const fetchPages = async () => {
       const savedPages = await indexedDBService.getItem('pages');
 
-      if (savedPages === null || savedPages.length === 0) {
+      if (!savedPages || savedPages.length === 0) {
         newPage();
       } else {
         setPages(savedPages);
@@ -60,10 +29,13 @@ const EditorInstance = ({ title, fonts }) => {
 
   useEffect(() => {
     const fetchCurrPageData = async () => {
-      const savedPage = await indexedDBService.getItem(selectedPageId);
-      const savedContent = savedPage ? savedPage.content : ' ';
-      const savedWords = savedPage ? savedPage.words : ' ';
-      return { savedWords, savedContent };
+      if (selectedPageId) {
+        const savedPage = await indexedDBService.getItem(selectedPageId);
+        const savedContent = savedPage ? savedPage.content : ' ';
+        const savedWords = savedPage ? savedPage.words : ' ';
+        return { savedWords, savedContent };
+      }
+      return { savedWords: 0, savedContent: '' };
     };
 
     const calculateAndPrintTotalWordCount = async (pages) => {
@@ -97,11 +69,12 @@ const EditorInstance = ({ title, fonts }) => {
       setContent(savedContent);
     };
 
-    // Assuming 'pages' is available in the current scope
-    calculateAndPrintTotalWordCount(pages);
+    if (selectedPageId) {
+      calculateAndPrintTotalWordCount(pages);
+    }
   }, [selectedPageId]);
 
-  const newPage = async () => {
+  const newPage = async (content = '') => {
     const newPageId = v4();
     const currentIndex = pages.indexOf(selectedPageId);
     const newPages = [
@@ -109,16 +82,37 @@ const EditorInstance = ({ title, fonts }) => {
       newPageId,
       ...pages.slice(currentIndex + 1),
     ];
+
+    // Update the pages in state and database
     setPages(newPages);
     await indexedDBService.setItem('pages', newPages);
+
+    // Set the content for the new page if provided
+    if (content) {
+      await indexedDBService.setItem(newPageId, {
+        content: content,
+        words: content.split(' ').length,
+      });
+    }
+
+    // Set the selected page ID after the pages state is updated
     setSelectedPageId(newPageId);
   };
 
-  const createNewPage = () => {
-    newPage();
+  const createNewPage = (content = '') => {
+    newPage(content);
   };
 
-  const selectPage = (pageId) => {
+  const selectPage = async (pageId, content = '') => {
+    if (content) {
+      const currentPage = await indexedDBService.getItem(pageId);
+      const updatedContent =
+        content + ' ' + (currentPage ? currentPage.content : '');
+      await indexedDBService.setItem(pageId, {
+        content: updatedContent,
+        words: updatedContent.split(' ').length,
+      });
+    }
     setSelectedPageId(pageId);
   };
 
@@ -126,7 +120,6 @@ const EditorInstance = ({ title, fonts }) => {
     const selectNextPage = () => {
       const index = pages.indexOf(selectedPageId);
       if (pages.length === 1) {
-        console.log('here');
         old = false;
       } else if (index === pages.length - 1) {
         setSelectedPageId(pages[index - 1]);
@@ -144,21 +137,15 @@ const EditorInstance = ({ title, fonts }) => {
     selectNextPage();
     setPages(newPages);
     if (!old) {
-      console.log('PAGESBEFORE: ', pages);
       const newPageId = v4();
       const newPages = [newPageId];
       setPages(newPages);
       await indexedDBService.setItem('pages', newPages);
       setSelectedPageId(newPageId);
-      console.log('PAGESAFTER: ', pages, newPageId);
     }
   };
 
   const getNextPage = (currentPageId) => {
-    console.log(
-      'getNextPage: -------------------------- ',
-      pages.indexOf(currentPageId) + 1
-    );
     if (currentPageId === pages[pages.length - 1]) return false;
     else return pages[pages.indexOf(currentPageId) + 1];
   };
