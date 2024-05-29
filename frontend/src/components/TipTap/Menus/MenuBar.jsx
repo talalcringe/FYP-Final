@@ -18,14 +18,18 @@ import {
   LuImage,
 } from 'react-icons/lu';
 import { BiParagraph } from 'react-icons/bi';
-import { RiCodeBlock, RiSeparator, RiTextWrap } from 'react-icons/ri';
+import {
+  RiCodeBlock,
+  RiSeparator,
+  RiTextWrap,
+  RiFontSize,
+} from 'react-icons/ri';
 
 import Button from '../../Editor/Button';
 import HeadingsDropDown from '../DropDowns/HeadingsDropDown';
 import AlignmentDropDown from '../DropDowns/AlignmentDropDown';
 import FontSizeDropDown from '../DropDowns/FontSizeDropDown';
-import FontFamilyDropDown from '../DropDowns/FontFamilyDropDown';
-import BlocksDropDown from '../DropDowns/BlocksDropDown';
+import FontFamilyDropDown from '../DropDowns/FontFamilyDropDown copy';
 
 const MenuBar = ({
   editor,
@@ -49,9 +53,9 @@ const MenuBar = ({
   showRemoveFormating,
   showUndoRedo,
   showImage,
-  showBlocks,
-  currentBlock,
+  blockClass,
 }) => {
+  const [fontSize, setFontSize] = useState('16px');
   const divider = <div className='w-1 h-1 rounded bg-cerulean mx-1'></div>;
 
   const setLink = useCallback(() => {
@@ -70,11 +74,13 @@ const MenuBar = ({
 
   if (!editor) return null;
 
+  const handleFontSizeChange = (size) => {
+    setFontSize(size);
+    editor.chain().focus().setFontSize(size).run();
+  };
+
   return (
     <div className={style}>
-      {showBlocks && (
-        <BlocksDropDown editor={editor} currentBlock={currentBlock} />
-      )}
       {showBasicStyles && (
         <>
           <Button

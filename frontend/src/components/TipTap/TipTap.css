@@ -1,5 +1,5 @@
 .tiptap {
-  @apply p-5 bg-white focus:border-0 h-[1028px] w-[727px];
+  @apply p-5 bg-white focus:border-0 h-[65vh] overflow-y-auto;
 }
 
 .tiptap > * + * {

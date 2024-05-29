@@ -31,7 +31,10 @@ const Buttons = ({ type, text, action }) => {
     );
   } else if (type == "login") {
     return (
-      <button className="bg-green px-10 py-4 rounded-md text-white flex justify-center items-center gap-2">
+      <button
+        className="bg-green px-10 py-4 rounded-md text-white flex justify-center items-center gap-2"
+        onClick={action}
+      >
         <img src={GoogleIcon} alt="google-icon" />
         <span>{text}</span>
       </button>

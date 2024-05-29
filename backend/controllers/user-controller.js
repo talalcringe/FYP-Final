@@ -147,39 +147,56 @@ exports.askGemini = async (req, res, next) => {
       throw new CustomError(404, "No user found");
     }
 
-    let targetChat = user.chats.find((item) => item.id === chatid); // Changed 'chat' to 'item'
-
+    let targetChat = user.chats.find((item) => item.id === chatid);
     let targetChatHistory;
 
     if (!targetChat) {
-      // Changed 'chat' to 'targetChat'
-      targetChat = { id: Math.random().toString(), history: [] }; // Added '.toString()' to ensure 'id' is a string
-      user.chats.push(targetChat); // Push the new chat to user's chats
-      await user.save(); // Save the user after updating chats
+      targetChat = { id: chatid, name: "Untitled", history: [] };
+      user.chats.push(targetChat);
     }
+
     targetChatHistory = targetChat.history;
+
+    console.log(targetChatHistory);
 
     const answer = await getModelResponse(searchQuery, targetChatHistory);
 
-    if (answer) {
-      console.log("ran");
-      targetChatHistory.push({
-        role: "user",
-        parts: [{ text: searchQuery }],
-      });
-      targetChatHistory.push({
-        role: "model",
-        parts: [{ text: answer }],
-      });
+    console.log(targetChatHistory);
+    // if (answer) {
+    //   targetChatHistory.push({
+    //     role: "user",
+    //     parts: [{ text: searchQuery }],
+    //   });
+    //   targetChatHistory.push({
+    //     role: "model",
+    //     parts: [{ text: answer }],
+    //   });
+    // }
+    console.log(targetChatHistory);
+    const isNewChat = targetChat.name == "Untitled";
+    const nameGeneration = searchQuery.split(" ");
+
+    if (isNewChat) {
+      const chatname =
+        nameGeneration[0] + " " + nameGeneration[1] + " " + nameGeneration[2];
+      targetChat.name = chatname;
+    } else {
+      chatName = nameGeneration.join(" "); // Join all words into a string
     }
 
+    targetChat.history = targetChatHistory; // Update targetChat with modified history
+    const index = user.chats.findIndex((item) => item.id === chatid);
+    user.chats[index] = targetChat; // Update user's chats array with modified targetChat
     await user.save();
 
     const response = generateResponseWithPayload(
       200,
       true,
       "Gemini Query successful",
-      answer
+      {
+        chat: targetChat,
+        answer,
+      }
     );
     res.status(200).json(response);
   } catch (err) {
@@ -187,6 +204,82 @@ exports.askGemini = async (req, res, next) => {
   }
 };
 
+exports.getAllChats = async (req, res, next) => {
+  // const { userid } = req.user;
+  const userid = "665452bd455273d836cd7444";
+  const user = await User.findById(userid);
+  if (!user) {
+    throw new CustomError(404, "No such user exists");
+  }
+  let allChats = user.chats;
+  if (allChats.length > 0) {
+    allChats = allChats.map((item) => {
+      return { id: item.id, name: item["name"] };
+    });
+  }
+
+  const response = generateResponseWithPayload(
+    200,
+    true,
+    "User chats fetched successfully",
+    allChats
+  );
+  return res.status(200).json(response);
+};
+
+exports.getOneChat = async (req, res, next) => {
+  // const { userid } = req.user;
+  const userid = "665452bd455273d836cd7444";
+
+  const { chatid } = req.params;
+
+  const user = await User.findById(userid);
+
+  if (!user) {
+    throw new CustomError(404, "No such user exists");
+  }
+  let chat;
+  let allChats = user.chats;
+  chat = allChats.find((item) => item.id == chatid);
+  if (!chat) {
+    throw new CustomError(404, "No such chat was found");
+  }
+  const response = generateResponseWithPayload(
+    200,
+    true,
+    "User chats fetched successfully",
+    chat
+  );
+  return res.status(200).json(response);
+};
+
+exports.initiateNewChat = async (req, res, next) => {
+  // const { userid } = req.user;
+  const userid = "665452bd455273d836cd7444";
+
+  const { chatid } = req.params;
+
+  const user = await User.findById(userid);
+
+  if (!user) {
+    throw new CustomError(404, "No such user exists");
+  }
+  const newChat = {
+    id: chatid,
+    name: "Untitled",
+    history: [],
+  };
+
+  user.chats.push(newChat);
+  await user.save();
+  const response = generateResponseWithPayload(
+    200,
+    true,
+    "User chats fetched successfully",
+    newChat
+  );
+  return res.status(200).json(response);
+};
 // exports.loadMoreResults = async () => {
 //   try {
 //     const nextPage = Math.ceil(displayedResults / 10) + 1;

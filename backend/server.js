@@ -25,8 +25,9 @@ app.use(
 );
 
 //Route Imports
-const authRoutes = require("./routes/auth-route");
+const authRoutes = require("./routes/authRoute");
 const userRoutes = require("./routes/user-route");
+const contentRoutes = require("./routes/contentRoute");
 
 //Test Route
 app.use("/test", (req, res, next) => {
@@ -37,6 +38,7 @@ app.use("/test", (req, res, next) => {
 //Auth Route
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/content", contentRoutes);
 
 //Error throwing middleware
 app.use((err, req, res, next) => {

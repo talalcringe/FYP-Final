@@ -31,3 +31,11 @@ GIFs
 
 
 PPT 
+
+failure
+RRR {"response":{"candidates":[{"content":{"parts":[{"text":"I am an AI designed to assist authors with their writing. Please let me know if you need help with any aspect of your book. \n"}],"role":"model"},"finishReason":"STOP","index":0,"safetyRatings":[{"category":"HARM_CATEGORY_SEXUALLY_EXPLICIT","probability":"NEGLIGIBLE"},{"category":"HARM_CATEGORY_HATE_SPEECH","probability":"NEGLIGIBLE"},{"category":"HARM_CATEGORY_HARASSMENT","probability":"NEGLIGIBLE"},{"category":"HARM_CATEGORY_DANGEROUS_CONTENT","probability":"NEGLIGIBLE"}]}],"usageMetadata":{"promptTokenCount":113,"candidatesTokenCount":27,"totalTokenCount":140}}}
+
+
+successful
+
+RRR {"response":{"candidates":[{"content":{"parts":[{"text":"Rumi, a seasoned archaeologist with weathered hands and piercing blue eyes, possesses a keen intellect and a thirst for uncovering the secrets of the past. Her face, tanned from years spent under the scorching Egyptian sun, is etched with lines that tell stories of countless expeditions and close calls. A worn leather satchel hangs perpetually from her shoulder, containing her trusty notebook, a compass, and a collection of ancient artifacts. Despite her gruff exterior, Rumi harbors a deep respect for the history she studies, recognizing the weight of the past and the delicate balance of preservation and discovery. \n"}],"role":"model"},"finishReason":"STOP","index":0,"safetyRatings":[{"category":"HARM_CATEGORY_SEXUALLY_EXPLICIT","probability":"NEGLIGIBLE"},{"category":"HARM_CATEGORY_HATE_SPEECH","probability":"NEGLIGIBLE"},{"category":"HARM_CATEGORY_HARASSMENT","probability":"NEGLIGIBLE"},{"category":"HARM_CATEGORY_DANGEROUS_CONTENT","probability":"NEGLIGIBLE"}]}],"usageMetadata":{"promptTokenCount":121,"candidatesTokenCount":113,"totalTokenCount":234}}}

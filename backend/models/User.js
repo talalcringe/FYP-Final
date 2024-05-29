@@ -16,8 +16,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     token: {
-      type: String,
-      default: "",
+      type: Object,
       required: true,
     },
     cookies: {
@@ -29,7 +28,13 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
     chats: {
-      type: [{ id: String, history: [] }],
+      type: [
+        {
+          id: String,
+          name: String,
+          history: [{ role: String, parts: [{ text: String }] }],
+        },
+      ],
       default: [],
     },
   },
