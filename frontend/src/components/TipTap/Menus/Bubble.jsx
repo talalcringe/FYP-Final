@@ -74,7 +74,6 @@ const Bubble = ({ editor, style, blockLabels, fonts }) => {
         showRemoveFormating={showRemoveFormating}
         showUndoRedo={false}
         showImage={false}
-        showBlocks={true}
       />
     </>
   );

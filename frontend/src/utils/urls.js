@@ -1,5 +1,16 @@
 const baseURl = `http://localhost:8080/api`;
 
+const authURLs = `${baseURl}/auth`;
+
+export const getLoginUrl = `${authURLs}/getAuthURL`;
+
+const contentURLs = `${baseURl}/content`;
+
+export const sendTextUrl = `${contentURLs}/createTextFilesAndUpload`;
+
+export const createPageFolderAndGetIdUrl = (pageId) =>
+  `${contentURLs}/createPageFolder/${pageId}`;
+
 const userRoutes = `${baseURl}/user`;
 
 export const getImagesUrl = (query) => `${userRoutes}/images/${query}`;

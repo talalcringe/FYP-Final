@@ -41,58 +41,52 @@ const extensions = [
   FontFamily.configure({ types: ['textStyle'] }),
 ];
 
-const TipTap = ({
-  pageId,
-  title,
-  totalWordCount,
-  content,
-  deletePage,
-  fonts,
-  createNewPage,
-  getNextPage,
-  selectPage,
-}) => {
+const chapter = '1';
+
+const TipTap = ({ id, title, content, deletePage, fonts }) => {
+  // console.log('TipTap rendered with id', id, 'content: ', content);
   const [wordCount, setWordCount] = useState(0);
 
   const editor = useEditor({
     extensions: extensions,
     content: content,
     onUpdate: ({ editor }) => {
-      localStorageService.setItem(pageId, editor.getHTML());
+      localStorageService.setItem(id, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
     },
+
     onBlur: async ({ editor }) => {
-      const content = localStorageService.getItem(pageId);
+      const content = localStorageService.getItem(id);
       if (editor && editor.isEditable && content) {
-        await indexedDBService.updateItem(pageId, {
+        await indexedDBService.updateItem(id, {
           content: content,
           words: wordCount,
         });
-        localStorageService.deleteItem(pageId);
+      } else {
+        // console.log('Editor was infact not editable at this point');
       }
     },
+
     onDestroy: async () => {
-      const content = localStorageService.getItem(pageId);
+      const content = localStorageService.getItem(id);
       if (content) {
-        await indexedDBService.updateItem(pageId, {
+        await indexedDBService.updateItem(id, {
           content: content,
           words: wordCount,
         });
+      } else {
+        // console.log('Editor was infact not editable at this point');
       }
     },
+    autofocus: 'end',
   });
 
   useEffect(() => {
-    const getPrevWordCount = async () => {
-      const pageJSON = await indexedDBService.getItem(pageId);
-      const prevWordCount = pageJSON ? pageJSON.words : 0;
-      setWordCount(prevWordCount);
-    };
     if (editor && content && content !== '<p></p>') {
       editor.commands.setContent(content);
       getPrevWordCount();
     }
-  }, [pageId, editor, content]);
+  }, [id, editor]);
 
   const styles = {
     top: {
@@ -176,10 +170,7 @@ const TipTap = ({
           fonts={fonts}
         />
       </FloatingMenu>
-      <BubbleMenu
-        editor={editor}
-        tippyOptions={{ placement: 'bottom-start', hideOnClick: true }}
-      >
+      <BubbleMenu editor={editor}>
         <Bubble
           editor={editor}
           style={styles.bubble.style}
