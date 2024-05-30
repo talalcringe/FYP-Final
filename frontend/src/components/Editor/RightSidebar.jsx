@@ -17,6 +17,7 @@ import { PlayIcon, PauseIcon } from "../../utils/icons";
 import { useDispatch } from "react-redux";
 import { updateSprint } from "../../store/userSlice";
 import { updateSprintStatus, headers } from "../../utils/urls";
+import axios from "axios";
 
 import indexedDBService from "../../services/indexedDB";
 let startingWordCount = 0;
@@ -157,6 +158,58 @@ const RightSidebar = ({ projectId, allWords, totalWordCount, word_count }) => {
     setSprintSideBar(false);
   };
 
+  const exporttoPdf = async () => {
+    try {
+      // setDownloading(true);
+      console.log(projectId);
+      const response = await fetch(
+        `http://localhost:8080/api/content/export/exportToPdf/${projectId}`,
+        {
+          method: "GET",
+          headers: headers,
+          credentials: "include",
+        }
+      );
+      // setDownloading(false);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "output.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const exporttoEpub = async () => {
+    try {
+      console.log(projectId);
+      // setDownloading(true);
+      const response = await fetch(
+        `http://localhost:8080/api/content/export/exportToEpub/${projectId}`,
+        {
+          method: "GET",
+          headers: headers,
+          credentials: "include",
+        }
+      );
+      // setDownloading(false);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "output.epub";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleSprintCreation = (sprintTime, sprintWords, sprintId) => {
     startingWordCount = allWords;
     const targetWords = allWords + sprintWords;
@@ -214,6 +267,8 @@ const RightSidebar = ({ projectId, allWords, totalWordCount, word_count }) => {
         <IconButton image={MusicIcon} onClick={openMusicSideBar} />
         <IconButton image={ImagesIcon} onClick={openImagesSideBar} />
         <IconButton image={SprintIcon} onClick={openSprintSideBar} />
+        <IconButton image={ExportingIcon} onClick={exporttoPdf} />
+        <IconButton image={ExportingIcon} onClick={exporttoEpub} />
 
         {imagessidebar && (
           <WiderOverlay onClose={closeImagesSideBar}>

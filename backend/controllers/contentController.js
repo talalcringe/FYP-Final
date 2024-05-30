@@ -344,7 +344,7 @@ exports.exportToEpub = async (req, res, next) => {
       ],
     };
 
-    console.log("EPUB options:", options);
+    // console.log("EPUB options:", options);
 
     // Convert HTML to EPUB
     new epub(options).promise
