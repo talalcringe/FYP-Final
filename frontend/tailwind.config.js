@@ -17,6 +17,9 @@ export default {
         yogurt: '#E0E5DC',
       },
     },
+    fontFamily: {
+      londrina: ['Londrina Solid', 'cursive'],
+    },
   },
   plugins: [],
 };
