@@ -4,7 +4,7 @@ import CloseIcon from "../../utils/CloseIcon";
 const Overlay = ({ children, onClose }) => {
   return (
     <div
-      className="inset-0 bg-[rgba(0,0,0,0.5)] left-0 top-0 grid place-items-center min-h-screen fixed z-50"
+      className="inset-0 bg-[rgba(0,0,0,0.5)] left-0 top-0 grid place-items-center min-h-screen fixed z-[997]"
       onClick={(e) => {
         e.stopPropagation();
         onClose();

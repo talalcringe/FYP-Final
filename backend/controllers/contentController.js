@@ -6,7 +6,14 @@ const Project = require("../models/Project");
 const User = require("../models/User");
 const { Readable } = require("stream");
 const Sprint = require("../models/Sprint");
-const { generateResponseWithPayload } = require("../utils/helpers.js");
+const pdf = require("html-pdf");
+const epub = require("epub-gen");
+const fs = require("fs");
+const path = require("path");
+const {
+  generateResponseWithPayload,
+  generateResponseWithoutPayload,
+} = require("../utils/helpers.js");
 
 exports.handleFormSubmission = async (req, res, next) => {
   try {
@@ -25,23 +32,17 @@ exports.handleFormSubmission = async (req, res, next) => {
 
     // Validate input data if necessary
     if (!title || !authors) {
+      console.log("ENTERED HERE");
       throw new CustomError(400, "Required fields are missing");
     }
 
-    // Handle the uploaded file
-    // if (!image) {
-    //   return res.status(400).json({ error: "Image upload failed" });
-    // }
-
-    // Save the data to the database or perform other actions
-    // For now, just return a success response
     const user = await User.findById(userId);
 
     if (!user) {
       throw new CustomError(404, "User not found");
     }
 
-    const project = await Project.create({
+    await Project.create({
       title,
       authors,
       subtitle,
@@ -55,19 +56,23 @@ exports.handleFormSubmission = async (req, res, next) => {
     user.projects.push(projectId);
     await user.save();
 
-    res.status(200).json({
-      message: "Project created successfully",
-      data: {
-        projectId,
-        title,
-        authors,
-        subtitle,
-        seriesInfo,
-        description,
-        genre,
-        image,
-      },
-    });
+    const data = {
+      projectId,
+      title,
+      authors,
+      subtitle,
+      seriesInfo,
+      description,
+      genre,
+      image,
+    };
+    const response = generateResponseWithPayload(
+      200,
+      true,
+      "Project Created Successfully",
+      data
+    );
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -140,12 +145,13 @@ exports.createPageFolder = async (req, res, next) => {
 //create Text Files And Upload to drive
 exports.createPageFilesAndUpload = async (req, res, next) => {
   const { token } = req.userData;
+  console.log(token);
   try {
     const payload = req.body;
-    let { id, data } = payload;
+    let { pageId, data } = payload;
     let { projectId, content, words } = data;
 
-    let fileName = `${id}.txt`;
+    let fileName = `${pageId}.txt`;
 
     // Check if a file with the same name already exists in Google Drive
     // let fileExists = await checkFileExistsInDrive(fileName, token);
@@ -226,6 +232,152 @@ exports.ensureFoldersExist = async (req, res, next) => {
     }
   } catch (error) {
     return next(error);
+  }
+};
+
+exports.aggregateProjectFilesContent = async (req, res, next) => {
+  const { token } = req.userData;
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    return next(new CustomError(400, "Invalid Request - Project ID not found"));
+  }
+
+  try {
+    oAuth2Client.setCredentials(token);
+    const drive = google.drive({ version: "v3", auth: oAuth2Client });
+
+    // Ensure the "ProductiveWriting" folder exists and get its ID
+    const productiveWritingFolderId = await ensureSiteFolderExists(drive);
+
+    // Get the project folder ID
+    const projectFolderId = await getProjectFolderId(
+      drive,
+      productiveWritingFolderId,
+      projectId
+    );
+
+    if (!projectFolderId) {
+      throw new CustomError(404, `Folder for Project ${projectId} not found`);
+    }
+
+    // Aggregate the content from all page files
+    const aggregatedContent = await aggregateProjectContent(
+      drive,
+      projectFolderId
+    );
+
+    // Add the aggregated content to the request body
+    req.body.aggregatedContent = aggregatedContent;
+    next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const tempDir = path.join(__dirname, "..", "temp");
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir, { recursive: true });
+}
+
+exports.exportToPdf = async (req, res, next) => {
+  const htmlContent = req.body.aggregatedContent;
+  const outputPdfPath = path.join(tempDir, "output.pdf");
+
+  try {
+    // Ensure the temp directory exists
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+
+    // Convert HTML to PDF
+    pdf.create(htmlContent).toFile(outputPdfPath, (err, result) => {
+      if (err) {
+        console.error("PDF generation error:", err);
+        return res
+          .status(500)
+          .send("An error occurred while generating the PDF");
+      } else {
+        console.log("PDF created successfully");
+        // Send the PDF file as a response
+        res.sendFile(outputPdfPath, (err) => {
+          if (err) {
+            console.error("Error sending PDF:", err);
+            return res
+              .status(500)
+              .send("An error occurred while sending the PDF");
+          } else {
+            console.log("PDF sent successfully");
+            // Clean up the generated PDF file
+            // if (fs.existsSync(outputPdfPath)) {
+            //   fs.unlinkSync(outputPdfPath);
+            // }
+          }
+        });
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.exportToEpub = async (req, res, next) => {
+  const htmlContent = req.body.aggregatedContent;
+  const outputEpubPath = path.join(tempDir, "output.epub");
+
+  try {
+    // Ensure the temp directory exists
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+
+    // Set options for epub-gen
+    const options = {
+      title: "Sample EPUB",
+      author: "Author Name",
+      output: outputEpubPath,
+      content: [
+        {
+          title: "Chapter 1",
+          data: htmlContent,
+        },
+      ],
+    };
+
+    console.log("EPUB options:", options);
+
+    // Convert HTML to EPUB
+    new epub(options).promise
+      .then(() => {
+        console.log("EPUB created successfully");
+        // Send the EPUB file as a response
+        res.sendFile(outputEpubPath, (err) => {
+          if (err) {
+            console.error("Error sending EPUB:", err);
+            return res
+              .status(500)
+              .send("An error occurred while sending the EPUB");
+          } else {
+            console.log("EPUB sent successfully");
+            // Clean up the generated EPUB file
+            // if (fs.existsSync(outputEpubPath)) {
+            //   fs.unlinkSync(outputEpubPath);
+            // }
+          }
+        });
+      })
+      .catch((err) => {
+        console.error("EPUB generation error:", err);
+        return res
+          .status(500)
+          .send("An error occurred while generating the EPUB");
+      });
+  } catch (error) {
+    // Clean up files in case of an unexpected error
+    if (fs.existsSync(outputEpubPath)) {
+      fs.unlinkSync(outputEpubPath);
+    }
+    next(error);
   }
 };
 
@@ -436,33 +588,41 @@ function textToStream(text) {
   return readableStream;
 }
 
-exports.createSprint = async () => {
+exports.createSprint = async (req, res, next) => {
   try {
-    const { projectid, targetTime, numberOfWords } = req.body;
+    const { projectId, sprintTitle, targetTime, numberOfWords, date } =
+      req.body;
 
-    const project = await Project.findById(projectid);
+    const project = await Project.findOne({ projectId });
 
     if (!project) {
       throw new CustomError(404, "No Sprint found");
     }
 
-    const date = new Date().toDateString();
-
     const sprint = await Sprint.create({
       numberOfWords,
       date,
       targetTime,
+      sprintTitle,
     });
 
     project.sprints.push(sprint._id);
 
     await project.save();
+    const response = generateResponseWithoutPayload(
+      201,
+      true,
+      "Sprint Created successfully",
+      sprint._id
+    );
+
+    return res.status(201).json(response);
   } catch (error) {
     next(error);
   }
 };
 
-exports.modifySprintStatus = async () => {
+exports.modifySprintStatus = async (req, res, next) => {
   try {
     const { sprintid } = req.params;
 
@@ -500,14 +660,34 @@ exports.modifySprintStatus = async () => {
 exports.getAllProjects = async (req, res, next) => {
   try {
     const { projects } = req.user;
+    let allProjectsData = [];
+
+    if (projects && projects.length > 0) {
+      allProjectsData = await Promise.all(
+        projects.map(async (item) => {
+          const project = await Project.find({ projectId: item });
+          console.log("IP", project);
+          if (project) {
+            return {
+              id: project[0].projectId,
+              image: project[0].image,
+              title: project[0].title,
+              status: project[0].status,
+            };
+          }
+        })
+      );
+    }
+
+    console.log(allProjectsData);
 
     const response = generateResponseWithPayload(
-      201,
+      200,
       true,
-      "Sprint Created Successfully",
-      projects
+      "Projects retrieved successfully",
+      allProjectsData
     );
-    return res.status(201).json(response);
+    return res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -538,3 +718,102 @@ exports.getSprintHistoryOfAProject = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAllProjectsWithSprintHistories = async (req, res, next) => {
+  try {
+    const { projects } = req.user; // Array of project IDs
+
+    // Fetch all projects based on the provided project IDs
+    const projectData = await Project.find({ projectId: { $in: projects } });
+
+    console.log("1", projectData);
+
+    // Fetch sprint data for each project
+    const projectsWithSprints = await Promise.all(
+      projectData.map(async (project) => {
+        const sprintData = await Sprint.find({ projectId: project._id });
+
+        // Format sprint data
+        const formattedSprints = sprintData.map((sprint, index) => ({
+          title: sprint.title,
+          words: sprint.numberOfWords,
+          time: `${sprint.targetTime} hours`,
+          status:
+            sprint.status === "success"
+              ? "completed"
+              : sprint.status === "failure"
+              ? "fail"
+              : "onhold",
+        }));
+
+        // Format project data
+        return {
+          title: project.title,
+          image: project.image,
+          wordcount: 1,
+          timespent: 2,
+          status: project.status,
+          sprints: formattedSprints,
+        };
+      })
+    );
+
+    console.log("2", projectsWithSprints);
+
+    // Return the formatted data
+    const response = generateResponseWithPayload(
+      200,
+      true,
+      "Project with sprint data fetched successfully",
+      projectsWithSprints
+    );
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+async function listFilesInFolder(drive, folderId) {
+  try {
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents`,
+      fields: "files(id, name)",
+    });
+    return response.data.files;
+  } catch (error) {
+    console.error("Error listing files in folder:", error);
+    throw new CustomError(500, "Error listing files in folder");
+  }
+}
+
+async function readFileContent(drive, fileId) {
+  try {
+    const response = await drive.files.get({
+      fileId,
+      alt: "media",
+    });
+    // console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("Error reading file content:", error);
+    throw new CustomError(500, "Error reading file content");
+  }
+}
+
+async function aggregateProjectContent(drive, projectFolderId) {
+  const files = await listFilesInFolder(drive, projectFolderId);
+  // console.log("Files in project folder:", files);
+  let aggregatedContent = "";
+
+  for (const file of files) {
+    const content = await readFileContent(drive, file.id);
+    const parsedContent = JSON.parse(content);
+    // console.log("Parsed content:", parsedContent);
+    if (parsedContent.data && parsedContent.data.content) {
+      aggregatedContent += parsedContent.data.content;
+      console.log("Aggregated content:", aggregatedContent);
+    }
+  }
+
+  return aggregatedContent;
+}

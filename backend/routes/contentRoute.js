@@ -12,6 +12,10 @@ const {
   getSprintHistoryOfAProject,
   createSprint,
   modifySprintStatus,
+  getAllProjectsWithSprintHistories,
+  aggregateProjectFilesContent,
+  exportToEpub,
+  exportToPdf,
 } = require("../controllers/contentController");
 
 // router.get("/createPageFolder/:pagenumber", verify, createPageFolder);
@@ -44,5 +48,23 @@ router.put(
 );
 
 router.post("/createSprint", verify, normalverify, createSprint);
+
+router.get(
+  "/export/exportToEpub/:projectId",
+  verify,
+  aggregateProjectFilesContent,
+  exportToEpub
+);
+router.get(
+  "/export/exportToPdf/:projectId",
+  verify,
+  aggregateProjectFilesContent,
+  exportToPdf
+);
+router.get("/getProjectsWithSprints",
+  verify,
+  normalverify,
+  getAllProjectsWithSprintHistories
+);
 
 module.exports = router;

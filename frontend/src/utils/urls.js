@@ -4,6 +4,8 @@ const authURLs = `${baseURl}/auth`;
 
 export const getLoginUrl = `${authURLs}/getAuthURL`;
 
+export const getUserInformation = `${authURLs}/getUserInformation`;
+
 const contentURLs = `${baseURl}/content`;
 
 export const sendFilesUrl = `${contentURLs}/createPageFilesAndUpload`;
@@ -16,6 +18,15 @@ export const createProjectFolderAndGetIdUrl = (projectId) =>
 
 // export const createPageFolderAndGetIdUrl = (pageId) =>
 //   `${contentURLs}/createPageFolder/${pageId}`;
+
+export const createSprint = `${contentURLs}/createSprint`;
+
+export const updateSprintStatus = (sprintid) =>
+  `${contentURLs}/modifySprintStatus/${sprintid}`;
+
+export const getAllProjects = `${contentURLs}/getAllProjects`;
+
+export const getAllProjectsWithSprints = `${contentURLs}/getProjectsWithSprints`;
 
 const userRoutes = `${baseURl}/user`;
 
