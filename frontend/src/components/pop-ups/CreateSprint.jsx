@@ -1,15 +1,21 @@
 import React, { useState } from "react";
 import Buttons from "../buttons/NormalButtons";
 import { headers, createSprint } from "../../utils/urls";
-import { errorToast, fallbackErrorMessage } from "../../utils/notifications";
+import {
+  errorToast,
+  successToast,
+  fallbackErrorMessage,
+} from "../../utils/notifications";
 import { Toaster } from "react-hot-toast";
+import Loader from "../../assets/loader.gif";
 
-const CreateSprint = ({ action }) => {
+const CreateSprint = ({ projectId, onSprintCreated, onClose }) => {
   // State hooks for form fields
   const [sprintTitle, setSprintTitle] = useState("");
   const [wordGoal, setWordGoal] = useState("");
   const [timeLimit, setTimeLimit] = useState("");
   const [error, setError] = useState("");
+  const [creating, setCreating] = useState(false);
 
   const ClearForm = () => {
     setSprintTitle("");
@@ -29,7 +35,7 @@ const CreateSprint = ({ action }) => {
 
     // Construct the sprint data
     const sprintData = {
-      projectid,
+      projectId: projectId,
       sprintTitle,
       numberOfWords: parseInt(wordGoal),
       targetTime: parseInt(timeLimit),
@@ -37,9 +43,11 @@ const CreateSprint = ({ action }) => {
     };
 
     try {
+      setCreating(true);
       let response = await fetch(createSprint, {
         method: "POST",
         headers,
+        credentials: "include",
         body: JSON.stringify(sprintData),
       });
 
@@ -48,12 +56,19 @@ const CreateSprint = ({ action }) => {
       if (response.success == true) {
         console.log(response);
         ClearForm();
+        onSprintCreated(timeLimit, wordGoal);
+        setTimeout(() => {
+          onClose();
+        }, 1000);
+        return successToast(response.message);
       } else {
         throw new Error(response.message || fallbackErrorMessage);
       }
     } catch (error) {
       setError(error.message);
       errorToast(error.message);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -105,12 +120,18 @@ const CreateSprint = ({ action }) => {
             name="time_limit"
             id="time_limit"
             value={timeLimit}
-            onChange={(e) => setTimeLimit(e.target.value)}
+            onChange={(e) => setTimeLimit(parseInt(e.target.value))}
             className="p-2 w-4/5 rounded-md bg-white border border-blue"
           />
         </div>
         <div className="controls flex justify-center mt-10 gap-10 items-center">
-          <Buttons text="Create" type="green" />
+          {creating ? (
+            <button className="px-6 py-2 rounded-md bg-white border border-black flex justify-center items-center">
+              <img src={Loader} alt="" className="h-5 w-5 rounded-full" />
+            </button>
+          ) : (
+            <Buttons text="Create" type="green" />
+          )}
         </div>
       </form>
       <Toaster />

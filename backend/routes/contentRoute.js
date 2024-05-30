@@ -12,6 +12,7 @@ const {
   getSprintHistoryOfAProject,
   createSprint,
   modifySprintStatus,
+  getAllProjectsWithSprintHistories,
 } = require("../controllers/contentController");
 
 // router.get("/createPageFolder/:pagenumber", verify, createPageFolder);
@@ -44,5 +45,12 @@ router.put(
 );
 
 router.post("/createSprint", verify, normalverify, createSprint);
+
+router.get(
+  "/getProjectsWithSprints",
+  verify,
+  normalverify,
+  getAllProjectsWithSprintHistories
+);
 
 module.exports = router;

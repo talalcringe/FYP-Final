@@ -26,6 +26,8 @@ export const updateSprintStatus = (sprintid) =>
 
 export const getAllProjects = `${contentURLs}/getAllProjects`;
 
+export const getAllProjectsWithSprints = `${contentURLs}/getProjectsWithSprints`;
+
 const userRoutes = `${baseURl}/user`;
 
 export const getImagesUrl = (query) => `${userRoutes}/images/${query}`;
