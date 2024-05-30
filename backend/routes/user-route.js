@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { body, param } = require("express-validator");
-const verify = require("../utils/jwtgaurd");
+const verify = require("../utils/JWTVerification");
 const adminverify = require("../utils/adminguard");
 const normalverify = require("../utils/normalguard");
 const multer = require("multer");
@@ -34,12 +34,12 @@ router.get("/getDefaultMusic", getDefaultMusic);
 // (2) GET MUSIC RESULTS
 router.get("/searchMusicSound", searchFreesoundAudio);
 
-router.put("/askourbot", askGemini);
+router.put("/askourbot", verify, normalverify, askGemini);
 
-router.get("/getAllChats", getAllChats);
+router.get("/getAllChats", verify, normalverify, getAllChats);
 
-router.get("/getOneChat/:chatid", getOneChat);
+router.get("/getOneChat/:chatid", verify, normalverify, getOneChat);
 
-router.get("/newChat/:chatid", initiateNewChat);
+router.get("/newChat/:chatid", verify, normalverify, initiateNewChat);
 
 module.exports = router;

@@ -12,6 +12,7 @@ const {
   getSprintHistoryOfAProject,
   createSprint,
   modifySprintStatus,
+  getAllProjectsWithSprintHistories,
   aggregateProjectFilesContent,
   exportToEpub,
   exportToPdf,
@@ -59,6 +60,11 @@ router.get(
   verify,
   aggregateProjectFilesContent,
   exportToPdf
+);
+router.get("/getProjectsWithSprints",
+  verify,
+  normalverify,
+  getAllProjectsWithSprintHistories
 );
 
 module.exports = router;

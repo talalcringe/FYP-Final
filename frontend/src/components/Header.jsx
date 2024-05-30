@@ -18,9 +18,10 @@ const Header = () => {
   };
 
   // Dynamically showing items logic
-  const isUserLoggedIn = useSelector((store) => store.user.isLoggedIn);
+  const isUserLoggedIn = useSelector((store) => store?.user?.isLoggedIn);
+  const userImage = useSelector((store) => store?.user?.user?.profileImage);
 
-  const content = !isUserLoggedIn ? (
+  const content = isUserLoggedIn ? (
     <>
       <button className="text-sm font-semibold bg-white text-blue text-md uppercase leading-6 mr-4 px-6 py-2 rounded-full ">
         Logout
@@ -31,8 +32,8 @@ const Header = () => {
       >
         Dashboard
       </Link>
-      <button className="w-10 h-10 rounded-full bg-navyblue text-black bg-yellow grid place-items-center text-xl ml-8">
-        J
+      <button className="w-10 h-10 rounded-full overflow-hidden bg-navyblue text-black bg-yellow grid place-items-center text-xl ml-8">
+        <img src={userImage} alt="" />
       </button>
     </>
   ) : (
@@ -49,7 +50,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
     <>
-      <header className="absolute inset-x-0 top-0 px-5 z-[999] bg-blue">
+      <header className="absolute inset-x-0 top-0 px-5 bg-blue">
         <nav
           className="flex items-center justify-between px-1 py-3 w-[95%] mx-auto lg:px-8"
           aria-label="Global"
@@ -100,8 +101,8 @@ const Header = () => {
                 <div className="space-y-2 py-6"></div>
                 <div className="py-6">
                   <div className="grid place-items-center mb-5">
-                    <button className="w-10 h-10  rounded-full bg-navyblue text-white grid place-items-center text-xl ">
-                      J
+                    <button className="w-10 h-10  rounded-full bg-navyblue overflow-hidden over text-white grid place-items-center text-xl ">
+                      <img src={userImage} alt="" />
                     </button>
                   </div>
                   <Link

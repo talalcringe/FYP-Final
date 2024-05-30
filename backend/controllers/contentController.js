@@ -6,11 +6,14 @@ const Project = require("../models/Project");
 const User = require("../models/User");
 const { Readable } = require("stream");
 const Sprint = require("../models/Sprint");
-const { generateResponseWithPayload } = require("../utils/helpers.js");
 const pdf = require("html-pdf");
 const epub = require("epub-gen");
 const fs = require("fs");
 const path = require("path");
+const {
+  generateResponseWithPayload,
+  generateResponseWithoutPayload,
+} = require("../utils/helpers.js");
 
 exports.handleFormSubmission = async (req, res, next) => {
   try {
@@ -29,23 +32,17 @@ exports.handleFormSubmission = async (req, res, next) => {
 
     // Validate input data if necessary
     if (!title || !authors) {
+      console.log("ENTERED HERE");
       throw new CustomError(400, "Required fields are missing");
     }
 
-    // Handle the uploaded file
-    // if (!image) {
-    //   return res.status(400).json({ error: "Image upload failed" });
-    // }
-
-    // Save the data to the database or perform other actions
-    // For now, just return a success response
     const user = await User.findById(userId);
 
     if (!user) {
       throw new CustomError(404, "User not found");
     }
 
-    const project = await Project.create({
+    await Project.create({
       title,
       authors,
       subtitle,
@@ -59,19 +56,23 @@ exports.handleFormSubmission = async (req, res, next) => {
     user.projects.push(projectId);
     await user.save();
 
-    res.status(200).json({
-      message: "Project created successfully",
-      data: {
-        projectId,
-        title,
-        authors,
-        subtitle,
-        seriesInfo,
-        description,
-        genre,
-        image,
-      },
-    });
+    const data = {
+      projectId,
+      title,
+      authors,
+      subtitle,
+      seriesInfo,
+      description,
+      genre,
+      image,
+    };
+    const response = generateResponseWithPayload(
+      200,
+      true,
+      "Project Created Successfully",
+      data
+    );
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -587,33 +588,41 @@ function textToStream(text) {
   return readableStream;
 }
 
-exports.createSprint = async () => {
+exports.createSprint = async (req, res, next) => {
   try {
-    const { projectid, targetTime, numberOfWords } = req.body;
+    const { projectId, sprintTitle, targetTime, numberOfWords, date } =
+      req.body;
 
-    const project = await Project.findById(projectid);
+    const project = await Project.findOne({ projectId });
 
     if (!project) {
       throw new CustomError(404, "No Sprint found");
     }
 
-    const date = new Date().toDateString();
-
     const sprint = await Sprint.create({
       numberOfWords,
       date,
       targetTime,
+      sprintTitle,
     });
 
     project.sprints.push(sprint._id);
 
     await project.save();
+    const response = generateResponseWithoutPayload(
+      201,
+      true,
+      "Sprint Created successfully",
+      sprint._id
+    );
+
+    return res.status(201).json(response);
   } catch (error) {
     next(error);
   }
 };
 
-exports.modifySprintStatus = async () => {
+exports.modifySprintStatus = async (req, res, next) => {
   try {
     const { sprintid } = req.params;
 
@@ -651,14 +660,34 @@ exports.modifySprintStatus = async () => {
 exports.getAllProjects = async (req, res, next) => {
   try {
     const { projects } = req.user;
+    let allProjectsData = [];
+
+    if (projects && projects.length > 0) {
+      allProjectsData = await Promise.all(
+        projects.map(async (item) => {
+          const project = await Project.find({ projectId: item });
+          console.log("IP", project);
+          if (project) {
+            return {
+              id: project[0].projectId,
+              image: project[0].image,
+              title: project[0].title,
+              status: project[0].status,
+            };
+          }
+        })
+      );
+    }
+
+    console.log(allProjectsData);
 
     const response = generateResponseWithPayload(
-      201,
+      200,
       true,
-      "Sprint Created Successfully",
-      projects
+      "Projects retrieved successfully",
+      allProjectsData
     );
-    return res.status(201).json(response);
+    return res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -685,6 +714,60 @@ exports.getSprintHistoryOfAProject = async (req, res, next) => {
       targetSprints
     );
     return res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAllProjectsWithSprintHistories = async (req, res, next) => {
+  try {
+    const { projects } = req.user; // Array of project IDs
+
+    // Fetch all projects based on the provided project IDs
+    const projectData = await Project.find({ projectId: { $in: projects } });
+
+    console.log("1", projectData);
+
+    // Fetch sprint data for each project
+    const projectsWithSprints = await Promise.all(
+      projectData.map(async (project) => {
+        const sprintData = await Sprint.find({ projectId: project._id });
+
+        // Format sprint data
+        const formattedSprints = sprintData.map((sprint, index) => ({
+          title: sprint.title,
+          words: sprint.numberOfWords,
+          time: `${sprint.targetTime} hours`,
+          status:
+            sprint.status === "success"
+              ? "completed"
+              : sprint.status === "failure"
+              ? "fail"
+              : "onhold",
+        }));
+
+        // Format project data
+        return {
+          title: project.title,
+          image: project.image,
+          wordcount: 1,
+          timespent: 2,
+          status: project.status,
+          sprints: formattedSprints,
+        };
+      })
+    );
+
+    console.log("2", projectsWithSprints);
+
+    // Return the formatted data
+    const response = generateResponseWithPayload(
+      200,
+      true,
+      "Project with sprint data fetched successfully",
+      projectsWithSprints
+    );
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }

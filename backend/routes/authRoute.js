@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const verify = require("../utils/JWTVerification");
+const normalguard = require("../utils/normalguard");
 
 const {
   getAuthUrl,
@@ -10,6 +11,6 @@ const {
 
 router.get("/getAuthURL", getAuthUrl);
 router.get("/getToken", getToken);
-router.get("/getUser", verify, getUser);
+router.get("/getUserInformation", verify, normalguard, getUser);
 
 module.exports = router;

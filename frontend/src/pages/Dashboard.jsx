@@ -1,49 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PencilIcon, DateIcon, PersonIcon } from "../utils/icons";
 import { Link } from "react-router-dom";
 import cover from "../assets/cover.png";
 import DashboardButtons from "../components/buttons/DashboardButtons";
 import NeedleChart from "../charts/NeedleChart";
 import DoughnutChart from "../charts/DoughnutChart";
-
-const ProjectsData = [
-  {
-    id: 1,
-    image:
-      "https://pixabay.com/get/gc0b11d755fa0da676e3fa54c4abcf4db3ae38ce5bab13f773d3f0c106bbd6ab090ac866a06afe4083da4c8fc9366ffa7e690a7340dd89af6c16386abfa4153c157ee9439c6705bdd47a8442c71061416_640.jpg",
-    title: "Some Random Title",
-    wordcount: 4343,
-    timespent: "12 hours 5 minutes",
-    status: "active",
-  },
-  {
-    id: 2,
-    image:
-      "https://pixabay.com/get/gc0b11d755fa0da676e3fa54c4abcf4db3ae38ce5bab13f773d3f0c106bbd6ab090ac866a06afe4083da4c8fc9366ffa7e690a7340dd89af6c16386abfa4153c157ee9439c6705bdd47a8442c71061416_640.jpg",
-    title: "Some Random Title",
-    wordcount: 12122,
-    timespent: "12 hours 5 minutes",
-    status: "onhold",
-  },
-  {
-    id: 3,
-    image:
-      "https://pixabay.com/get/gc0b11d755fa0da676e3fa54c4abcf4db3ae38ce5bab13f773d3f0c106bbd6ab090ac866a06afe4083da4c8fc9366ffa7e690a7340dd89af6c16386abfa4153c157ee9439c6705bdd47a8442c71061416_640.jpg",
-    title: "Some Random Title",
-    wordcount: 5456,
-    timespent: "12 hours 5 minutes",
-    status: "completed",
-  },
-  {
-    id: 4,
-    image:
-      "https://pixabay.com/get/gc0b11d755fa0da676e3fa54c4abcf4db3ae38ce5bab13f773d3f0c106bbd6ab090ac866a06afe4083da4c8fc9366ffa7e690a7340dd89af6c16386abfa4153c157ee9439c6705bdd47a8442c71061416_640.jpg",
-    title: "Some Random Title",
-    wordcount: 6565,
-    timespent: "12 hours 5 minutes",
-    status: "cancelled",
-  },
-];
+import { headers, getAllProjects, getUserInformation } from "../utils/urls";
+import { errorToast } from "../utils/notifications";
+import { useDispatch } from "react-redux";
+import { Login as loginAction } from "../store/userSlice";
 
 const Options = [
   { id: 1, option: "Edit" },
@@ -52,7 +17,13 @@ const Options = [
 ];
 
 const Dashboard = () => {
-  const [menuStates, setMenuStates] = useState(ProjectsData.map(() => false));
+  const [menuStates, setMenuStates] = useState([]);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+
+  const dispatch = useDispatch();
 
   const toggleMenu = (index) => {
     setMenuStates((prev) => {
@@ -62,32 +33,92 @@ const Dashboard = () => {
     });
   };
 
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        let response = await fetch(getUserInformation, {
+          method: "GET",
+          headers,
+          credentials: "include",
+        });
+
+        response = await response.json();
+
+        if (response.success === true) {
+          setUser(response.data);
+          dispatch(loginAction(response.data));
+        } else {
+          throw new Error(response.message || "Failed to fetch user data");
+        }
+      } catch (error) {
+        setError(error.message);
+        errorToast(error.message);
+      }
+    };
+    getUserData();
+  }, [dispatch]);
+
+  useEffect(() => {
+    const getProjectsData = async () => {
+      try {
+        let response = await fetch(getAllProjects, {
+          method: "GET",
+          headers,
+          credentials: "include",
+        });
+
+        response = await response.json();
+        console.log(response);
+        if (response.success === true) {
+          setData(response.data);
+          setMenuStates(new Array(response.data.length).fill(false));
+        } else {
+          throw new Error(response.message || "Failed to fetch projects data");
+        }
+      } catch (error) {
+        setError(error.message);
+        errorToast(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getProjectsData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <section className="bg-gray-200">
       <div className="p-4 max-w-7xl mx-auto mt-[90px]">
-        <div className="top max-w-xl mx-auto mt-3 flex justify-center items-center gap:8  md:gap-10 bg-white py-8 rounded-md flex-col md:flex-row">
-          <div className="left-side w-16 h-16 rounded-full bg-yellow grid place-items-center">
-            J
+        <div className="top max-w-xl mx-auto mt-3 flex justify-center items-center gap-8 md:gap-10 bg-white py-8 rounded-md flex-col md:flex-row">
+          <div className="left-side w-16 h-16 rounded-full bg-yellow grid place-items-center overflow-hidden">
+            <img src={user?.profileImage} alt={user?.fullname} />
           </div>
           <div className="right-side mt-4 md:mt-0">
             <h4 className="font-bold text-center md:text-left text-lg">
-              John Doe
+              {user?.fullname}
             </h4>
             <div className="flex justify-center items-center gap-2">
-              <p>Age 6</p>
+              <p>Age {user?.age}</p>
               <span>.</span>
-              <p>Student</p>
+              <p>{user?.occupation}</p>
               <span>.</span>
-              <p>Melbourne,Australia</p>
+              <p>{user?.location}</p>
             </div>
           </div>
         </div>
         <div className="middle flex flex-col sm:flex-row justify-center items-center gap-3 my-7">
           <p className="flex justify-between items-center gap-1 bg-white rounded-full py-1 px-3 text-sm">
-            {DateIcon} <span>Joined: March 12,2024</span>
+            {DateIcon} <span>Joined: {user?.joinDate}</span>
           </p>
           <p className="flex justify-between items-center gap-1 bg-white rounded-full py-1 px-3 text-sm">
-            {PersonIcon} <span>Last Active: 1d ago</span>
+            {PersonIcon} <span>Last Active: {user?.lastActive}</span>
           </p>
         </div>
         <div className="bottom bg-white p-4 rounded-md">
@@ -100,14 +131,15 @@ const Dashboard = () => {
               {PencilIcon}Create New Project
             </Link>
           </div>
-          <div className="flex flex-wrap justify-between items-center gap-2 md:justify-between rounded-md">
-            {ProjectsData.map((item, index) => (
-              <div
+          <div className="flex justify-between flex-wrap items-center gap-2 md:justify-between rounded-md">
+            {data.map((item, index) => (
+              <Link
                 key={item.id}
-                className="w-full md:w-auto min-w-[290px] md:min-w-[250px] border border-blue text-center"
+                to={`/dashboard/editor/${item.id}`}
+                className="w-full  min-w-[250px] md:w-[300px] border border-blue text-center"
               >
                 <div className="item-image flex justify-center">
-                  <img src={cover} alt={item.title} />
+                  <img src={item.image || cover} alt={item.title} />
                 </div>
                 <div className="textual-content max-w-[75%] mx-auto p-2">
                   <h3 className="text-blue text-xl font-bold">{item.title}</h3>
@@ -147,7 +179,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -160,14 +192,12 @@ const Dashboard = () => {
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-5 md:gap-2 md:justify-between rounded-md">
             <div className="left w-full md:w-1/2 flex justify-center">
-              {/* <BarChart /> */}
               <DoughnutChart />
             </div>
             <div className="right w-full md:w-1/2">
               <NeedleChart />
             </div>
           </div>
-          <div></div>
         </div>
       </div>
     </section>

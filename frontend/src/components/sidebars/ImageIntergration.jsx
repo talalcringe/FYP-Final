@@ -13,7 +13,7 @@ const ImageList = ({ images }) => {
   return (
     <div className="flex flex-wrap justify-between items-center gap-2 px-2 mt-4 overflow-y-scroll">
       {images.map((image) => (
-        <div key={image.id} className="w-[48%] rounded-sm">
+        <div key={image.id} className="w-[15%] rounded-sm">
           <img src={image.webformatURL} alt={image.tags} />
           {/* <div>
             <a
@@ -70,7 +70,7 @@ const SearchBar = ({ sendBackResults, changeSending }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full mt-14 py-4 sticky top-0  border-b border-blue"
+      className="w-full mt-14 py-4 z-30 sticky top-0  border-b border-blue"
     >
       <div className="flex justify-between items-center gap-2 max-w-[95%] mx-auto">
         <input
