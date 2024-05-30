@@ -4,6 +4,6 @@
 
 .bgimage {
     background-image: url('../src/assets/hero.jpg');
-    background-position: top right;
+    background-position: top left;
     background-size: cover;
 }
