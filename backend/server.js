@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const connectDatabase = require("./config/databaseconnection");
 const path = require("path");
+const bodyParser = require("body-parser");
 
 const app = express();
 
@@ -11,6 +12,7 @@ const app = express();
 connectDatabase();
 
 app.use(express.json());
+app.use(bodyParser.text({ type: "text/html" }));
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -28,6 +30,7 @@ app.use(
 const authRoutes = require("./routes/authRoute");
 const userRoutes = require("./routes/user-route");
 const contentRoutes = require("./routes/contentRoute");
+const exportRoutes = require("./routes/exportRoute");
 
 //Test Route
 app.use("/test", (req, res, next) => {
@@ -39,6 +42,7 @@ app.use("/test", (req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/content", contentRoutes);
+app.use("/api/export", exportRoutes);
 
 //Error throwing middleware
 app.use((err, req, res, next) => {
