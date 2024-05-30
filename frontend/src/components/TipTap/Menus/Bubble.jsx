@@ -1,5 +1,5 @@
-import React from 'react';
-import MenuBar from './MenuBar';
+import React from "react";
+import MenuBar from "./MenuBar";
 
 const Bubble = ({ editor, style, blockLabels, fonts }) => {
   let showBasicStyles = true;
@@ -18,26 +18,26 @@ const Bubble = ({ editor, style, blockLabels, fonts }) => {
     return null;
   }
 
-  if (editor.isActive('paragraph')) {
+  if (editor.isActive("paragraph")) {
     showHeadings = false;
   }
 
-  if (editor.isActive('heading')) {
+  if (editor.isActive("heading")) {
     showCode = false;
     showQuote = false;
   }
 
-  if (editor.isActive('blockquote')) {
+  if (editor.isActive("blockquote")) {
     showQuote = false;
   }
 
-  if (editor.isActive('bulletList') || editor.isActive('orderedList')) {
+  if (editor.isActive("bulletList") || editor.isActive("orderedList")) {
     showHeadings = false;
     showUl = true;
     showOl = true;
   }
 
-  if (editor.isActive('codeBlock')) {
+  if (editor.isActive("codeBlock")) {
     showBasicStyles = false;
     showCode = false;
     showAlignment = false;
@@ -74,6 +74,7 @@ const Bubble = ({ editor, style, blockLabels, fonts }) => {
         showRemoveFormating={showRemoveFormating}
         showUndoRedo={false}
         showImage={false}
+        showChangeBlocks={true}
       />
     </>
   );

@@ -130,13 +130,13 @@ exports.askGemini = async (req, res, next) => {
   try {
     const { searchQuery, chatid } = req.body;
     // const { userid } = req.user;
-    const userid = "665452bd455273d836cd7444";
+    const { userId } = req.userData;
 
     if (!searchQuery) {
       throw new CustomError(400, "Please provide query");
     }
 
-    const user = await User.findById(userid);
+    const user = await User.findById(userId);
 
     if (!user) {
       throw new CustomError(404, "No user found");
@@ -201,8 +201,8 @@ exports.askGemini = async (req, res, next) => {
 
 exports.getAllChats = async (req, res, next) => {
   // const { userid } = req.user;
-  const userid = "665452bd455273d836cd7444";
-  const user = await User.findById(userid);
+  const { userId } = req.userData;
+  const user = await User.findById(userId);
   if (!user) {
     throw new CustomError(404, "No such user exists");
   }
@@ -224,11 +224,11 @@ exports.getAllChats = async (req, res, next) => {
 
 exports.getOneChat = async (req, res, next) => {
   // const { userid } = req.user;
-  const userid = "665452bd455273d836cd7444";
+  const { userId } = req.userData;
 
   const { chatid } = req.params;
 
-  const user = await User.findById(userid);
+  const user = await User.findById(userId);
 
   if (!user) {
     throw new CustomError(404, "No such user exists");
@@ -250,11 +250,11 @@ exports.getOneChat = async (req, res, next) => {
 
 exports.initiateNewChat = async (req, res, next) => {
   // const { userid } = req.user;
-  const userid = "665452bd455273d836cd7444";
+  const { userId } = req.userData;
 
   const { chatid } = req.params;
 
-  const user = await User.findById(userid);
+  const user = await User.findById(userId);
 
   if (!user) {
     throw new CustomError(404, "No such user exists");

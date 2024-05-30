@@ -45,6 +45,13 @@ const EditorInstance = ({ title, fonts, projectId }) => {
   const [pages, setPages] = useState([]);
   const [selectedPageId, setSelectedPageId] = useState(pages[pages.length - 1]); // Default to the last page
   const [totalWordCount, setTotalWordCount] = useState(0);
+  const [allWords, setAllWords] = useState(0);
+
+  const [word_count, setWordCount] = useState(0);
+
+  const updateWordCount = (words) => {
+    setWordCount(words);
+  };
 
   useEffect(() => {
     const fetchPages = async () => {
@@ -91,6 +98,7 @@ const EditorInstance = ({ title, fonts, projectId }) => {
     const calculateAndPrintTotalWordCount = async (pages) => {
       // Fetch the current page data
       const { savedWords, savedContent } = await fetchCurrPageData();
+      setAllWords(savedWords);
 
       // Use map to create an array of promises to fetch word counts
       const wordPromises = pages.map(async (pageId) => {
@@ -199,6 +207,7 @@ const EditorInstance = ({ title, fonts, projectId }) => {
         {selectedPageId && content && (
           <TipTap
             key={selectedPageId}
+            updateWordCount={updateWordCount}
             pageId={selectedPageId}
             totalWordCount={totalWordCount}
             projectId={projectId}
@@ -213,7 +222,11 @@ const EditorInstance = ({ title, fonts, projectId }) => {
         )}
       </div>
       <div className="sticky top-0 h-full w-[15vw] z-[2]">
-        <RightSidebar />
+        <RightSidebar
+          projectId={projectId}
+          allWords={allWords}
+          totalWordCount
+        />
       </div>
     </div>
   );

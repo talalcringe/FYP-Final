@@ -43,7 +43,6 @@ const extensions = [
   FontFamily.configure({ types: ["textStyle"] }),
 ];
 
-
 const TipTap = ({
   pageId,
   projectId,
@@ -52,6 +51,7 @@ const TipTap = ({
   content,
   deletePage,
   fonts,
+  updateWordCount,
   createNewPage,
   getNextPage,
   selectPage,
@@ -64,6 +64,7 @@ const TipTap = ({
     onUpdate: ({ editor }) => {
       localStorageService.setItem(pageId, editor.getHTML());
       setWordCount(getWordCount(editor.getText()));
+      updateWordCount(getWordCount(editor.getText()));
     },
     onBlur: async ({ editor }) => {
       const content = localStorageService.getItem(pageId);
@@ -85,13 +86,14 @@ const TipTap = ({
       }
     },
     autofocus: "end",
-  }); 
+  });
 
   useEffect(() => {
     const getPrevWordCount = async () => {
       const pageJSON = await indexedDBService.getItem(pageId);
       const prevWordCount = pageJSON ? pageJSON.words : 0;
       setWordCount(prevWordCount);
+      updateWordCount(prevWordCount);
     };
     if (editor && content && content !== "<p></p>") {
       editor.commands.setContent(content);
