@@ -7,9 +7,11 @@ const verify = (req, res, next) => {
   // console.log(cookie);
   if (!cookie) {
     // throw new CustomError(402, "You are not authorized");
-    console.log('cookie not recieved');
+    console.log("cookie not recieved");
   }
-  const recievedToken = cookie.split("; ")[1].split("=")[1];
+  // const recievedToken = cookie.split("; ")[1].split("=")[1];
+  const recievedToken = cookie.split("=")[1];
+  // console.log(recievedToken);
   // console.log(recievedToken);
   const data = jwt.verify(recievedToken, process.env.SECRET_KEY);
   // console.log(data);
